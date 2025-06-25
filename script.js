@@ -5,16 +5,6 @@ function sha256(str) {
   });
 }
 
-const api = async (path, data) => {
-  const res = await fetch(`/api${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) throw new Error((await res.json()).error || res.statusText);
-  return res.json();
-};
-
 function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
@@ -25,11 +15,17 @@ function handleSignUp(e) {
     return;
   }
   sha256(f.password.value).then(hash => {
-    api("/signup", {
+    const newUser = {
       username: f.username.value.trim(),
       email: f.email.value.trim().toLowerCase(),
       password: hash
-    }).then(({ message }) => {
+    };
+
+    const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+    localUsers.push(newUser);
+    localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+    api("/signup", newUser).then(({ message }) => {
       f.reset();
       card.querySelector("#signup-ok").textContent = message;
       card.querySelector("#signup-ok").style.display = "block";
@@ -112,48 +108,73 @@ function saveToLeaderboard() {
   const display = document.getElementById("user-display");
   const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
-  api("/score", {
+  const scoreData = {
     username,
     score,
     total: settings.numQuestions,
     timestamp: new Date().toISOString()
-  })
-  .then(() => alert("✅ Score saved to leaderboard!"))
-  .catch(err => alert("❌ Failed to save score: " + err.message));
+  };
+
+  const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  local.push(scoreData);
+  localStorage.setItem("localLeaderboard", JSON.stringify(local));
+
+  api("/score", scoreData)
+    .then(() => alert("✅ Score saved to leaderboard!"))
+    .catch(() => alert("⚠️ Score saved locally only. Server unreachable."));
 }
 
 function showLeaderboard() {
-  fetch("/api/leaderboard")
+  Promise.all([
+    fetch("/api/leaderboard").then(res => res.ok ? res.json() : []),
+    Promise.resolve(JSON.parse(localStorage.getItem("localLeaderboard") || "[]"))
+  ])
+  .then(([serverScores, localScores]) => {
+    const combined = [...serverScores, ...localScores];
+    combined.sort((a, b) => b.score - a.score);
+    const top100 = combined.slice(0, 100);
+
+    card.innerHTML = `
+      <button class="back-arrow" onclick="showWelcome()">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="title">🏆 Leaderboard</h1>
+      <p class="subtitle">Top 100 Scores</p>
+      <div class="leaderboard-box">
+        <ol class="leaderboard-list">
+          ${top100.map((entry, i) => `
+            <li class="leaderboard-entry">
+              <span class="rank">#${i + 1}</span>
+              <span class="user">${entry.username}</span>
+              <span class="score">${entry.score}/${entry.total}</span>
+              <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+            </li>
+          `).join("")}
+        </ol>
+      </div>`;
+  })
+  .catch(err => {
+    card.innerHTML = `
+      <div class="error-box">
+        <h2>❌ Unable to Load Leaderboard</h2>
+        <p>${err.message}</p>
+      </div>`;
+  });
+}
+
+function api(path, data) {
+  return fetch(`/api${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
     .then(res => {
-      if (!res.ok) throw new Error("Failed to load leaderboard");
+      if (!res.ok) {
+        return res.text().then(text => {
+          throw new Error(text || res.statusText);
+        });
+      }
       return res.json();
-    })
-    .then(data => {
-      card.innerHTML = `
-        <button class="back-arrow" onclick="showWelcome()">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <h1 class="title">🏆 Leaderboard</h1>
-        <p class="subtitle">Top 100 Scores</p>
-        <div class="leaderboard-box">
-          <ol class="leaderboard-list">
-            ${data.map((entry, i) => `
-              <li class="leaderboard-entry">
-                <span class="rank">#${i + 1}</span>
-                <span class="user">${entry.username}</span>
-                <span class="score">${entry.score}/${entry.total}</span>
-                <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-              </li>
-            `).join("")}
-          </ol>
-        </div>`;
-    })
-    .catch(err => {
-      card.innerHTML = `
-        <div class="error-box">
-          <h2>❌ Unable to Load Leaderboard</h2>
-          <p>${err.message}</p>
-        </div>`;
     });
 }
 
