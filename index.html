@@ -56,7 +56,7 @@
   <div class="overlay" aria-hidden="true"></div>
 
   <!-- username display (initially hidden) -->
-<!-- username display (initially hidden) -->
+
 <div id="user-display" class="user-display" style="display:none;"></div>
 
 <!-- top navigation buttons -->
@@ -92,7 +92,7 @@
                (!localStorage.getItem("theme")&&matchMedia("(prefers-color-scheme: dark)").matches));
     btnT.addEventListener("click",()=>applyTheme(!document.body.classList.contains("dark")));
 
-    /* ---------- QUIZ BASICS ---------- */
+ /* ---------- QUIZ BASICS ---------- */
     const QUESTIONS_URL="https://dl.dropboxusercontent.com/scl/fi/zfe372bfs9q6qr7lyd9c1/questions.json?rlkey=brrb96o7zbz57k17pofh4w3r8&raw=1";
     const card=document.getElementById("main-card");
     let allQuestions=[],pool=[],current=[],idx=0,score=0;
@@ -133,43 +133,223 @@ async function loadQuestions(){
         <button class="start" onclick="startQuiz()">Start Quiz</button>`;
     }
 
-    /* ---------- SETTINGS ---------- */
-    function showSettings(){
-      card.innerHTML=`
-        <button class="back-arrow" onclick="showWelcome()">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <h1 class="title">Settings</h1>
-        <p style="margin-bottom:18px;">Customize your experience</p>
+function showSettings() {
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">Settings</h1>
+    <p style="margin-bottom:18px;">Customize your experience</p>
 
-        <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          Number&nbsp;of&nbsp;Questions
-          <input id="set-qcount" type="number" min="1" value="${settings.numQuestions}" style="width:70px;padding:4px;">
-        </label>
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Number&nbsp;of&nbsp;Questions
+      <input id="set-qcount" type="number" min="1" value="${settings.numQuestions}" style="width:70px;padding:4px;">
+    </label>
 
-        <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-          Enable&nbsp;Timer
-          <input id="set-timer-toggle" type="checkbox" ${settings.timerOn?'checked':''}>
-        </label>
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Enable&nbsp;Timer
+      <input id="set-timer-toggle" type="checkbox" ${settings.timerOn ? 'checked' : ''}>
+    </label>
 
-        <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
-          Seconds&nbsp;Per&nbsp;Question
-          <input id="set-qtime" type="number" min="5" max="300" value="${settings.timePerQuestion}"
-                 style="width:70px;padding:4px;" ${settings.timerOn?'':'disabled'}>
-        </label>
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
+      Seconds&nbsp;Per&nbsp;Question
+      <input id="set-qtime" type="number" min="5" max="300" value="${settings.timePerQuestion}"
+             style="width:70px;padding:4px;" ${settings.timerOn ? '' : 'disabled'}>
+    </label>
 
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <button class="start" onclick="applyTheme(false)">Light Mode</button>
-          <button class="start" onclick="applyTheme(true)">Dark Mode</button>
-        </div>`;
-      const qCount=card.querySelector('#set-qcount');
-      const timerChk=card.querySelector('#set-timer-toggle');
-      const qTime=card.querySelector('#set-qtime');
-      qCount.oninput=e=>settings.numQuestions=Math.max(1,+e.target.value);
-      timerChk.onchange=e=>{settings.timerOn=e.target.checked;qTime.disabled=!settings.timerOn}
-      qTime.oninput=e=>settings.timePerQuestion=Math.max(5,+e.target.value);
-    }
-    window.showSettings = showSettings;
+    <div class="settings-section" style="margin-bottom:26px;">
+      <label for="category-select" style="font-weight:600;display:block;margin-bottom:6px;">Select Category:</label>
+      <select id="category-select" style="padding:6px;border-radius:6px;font-size:0.95rem;width:100%;max-width:400px;">
+        <option value="any">Any Category</option>
+        <option value="9">General Knowledge</option>
+        <option value="10">Entertainment: Books</option>
+        <option value="11">Entertainment: Film</option>
+        <option value="12">Entertainment: Music</option>
+        <option value="13">Entertainment: Musicals & Theatres</option>
+        <option value="14">Entertainment: Television</option>
+        <option value="15">Entertainment: Video Games</option>
+        <option value="16">Entertainment: Board Games</option>
+        <option value="17">Science & Nature</option>
+        <option value="18">Science: Computers</option>
+        <option value="19">Science: Mathematics</option>
+        <option value="20">Mythology</option>
+        <option value="21">Sports</option>
+        <option value="22">Geography</option>
+        <option value="23">History</option>
+        <option value="24">Politics</option>
+        <option value="25">Art</option>
+        <option value="26">Celebrities</option>
+        <option value="27">Animals</option>
+        <option value="28">Vehicles</option>
+        <option value="29">Entertainment: Comics</option>
+        <option value="30">Science: Gadgets</option>
+        <option value="31">Entertainment: Japanese Anime & Manga</option>
+        <option value="32">Entertainment: Cartoon & Animations</option>
+      </select>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:100px;">
+      <button class="start" onclick="applyTheme(false)">Light Mode</button>
+      <button class="start" onclick="applyTheme(true)">Dark Mode</button>
+    </div>`;
+
+  const qCount = card.querySelector('#set-qcount');
+  const timerChk = card.querySelector('#set-timer-toggle');
+  const qTime = card.querySelector('#set-qtime');
+  const categorySelect = card.querySelector('#category-select');
+
+  qCount.oninput = e => settings.numQuestions = Math.max(1, +e.target.value);
+  timerChk.onchange = e => {
+    settings.timerOn = e.target.checked;
+    qTime.disabled = !settings.timerOn;
+  };
+  qTime.oninput = e => settings.timePerQuestion = Math.max(5, +e.target.value);
+  categorySelect.onchange = e => settings.category = e.target.value;
+}
+
+function startQuiz() {
+  const category = settings.category || "any";
+  const categoryParam = category !== "any" ? `&category=${category}` : "";
+
+  fetch(`https://opentdb.com/api.php?amount=${settings.numQuestions}${categoryParam}&type=multiple`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.response_code !== 0 || !Array.isArray(data.results))
+        throw new Error("Failed to load questions");
+
+      questions = data.results.map(q => {
+        const choices = [...q.incorrect_answers.map(decodeHTMLEntities)];
+        const answerText = decodeHTMLEntities(q.correct_answer);
+        const answerIndex = Math.floor(Math.random() * (choices.length + 1));
+        choices.splice(answerIndex, 0, answerText);
+        return {
+          question: decodeHTMLEntities(q.question),
+          choices,
+          answer: answerIndex
+        };
+      });
+
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    })
+    .catch(err => {
+      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
+    });
+}
+
+function showSettings() {
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">Settings</h1>
+    <p style="margin-bottom:18px;">Customize your experience</p>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Number&nbsp;of&nbsp;Questions
+      <input id="set-qcount" type="number" min="1" value="${settings.numQuestions}" style="width:70px;padding:4px;">
+    </label>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Enable&nbsp;Timer
+      <input id="set-timer-toggle" type="checkbox" ${settings.timerOn ? 'checked' : ''}>
+    </label>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
+      Seconds&nbsp;Per&nbsp;Question
+      <input id="set-qtime" type="number" min="5" max="300" value="${settings.timePerQuestion}"
+             style="width:70px;padding:4px;" ${settings.timerOn ? '' : 'disabled'}>
+    </label>
+
+    <div class="settings-section" style="margin-top:30px;margin-bottom:26px;">
+      <label for="category-select" style="font-weight:600;display:block;margin-bottom:6px;">Select Category:</label>
+      <select id="category-select" style="padding:6px;border-radius:6px;font-size:0.95rem;width:100%;max-width:400px;">
+        <option value="any">Any Category</option>
+        <option value="9">General Knowledge</option>
+        <option value="10">Entertainment: Books</option>
+        <option value="11">Entertainment: Film</option>
+        <option value="12">Entertainment: Music</option>
+        <option value="13">Entertainment: Musicals & Theatres</option>
+        <option value="14">Entertainment: Television</option>
+        <option value="15">Entertainment: Video Games</option>
+        <option value="16">Entertainment: Board Games</option>
+        <option value="17">Science & Nature</option>
+        <option value="18">Science: Computers</option>
+        <option value="19">Science: Mathematics</option>
+        <option value="20">Mythology</option>
+        <option value="21">Sports</option>
+        <option value="22">Geography</option>
+        <option value="23">History</option>
+        <option value="24">Politics</option>
+        <option value="25">Art</option>
+        <option value="26">Celebrities</option>
+        <option value="27">Animals</option>
+        <option value="28">Vehicles</option>
+        <option value="29">Entertainment: Comics</option>
+        <option value="30">Science: Gadgets</option>
+        <option value="31">Entertainment: Japanese Anime & Manga</option>
+        <option value="32">Entertainment: Cartoon & Animations</option>
+      </select>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;margin-top:30px;margin-bottom:100px;">
+      <button class="start" onclick="applyTheme(false)">Light Mode</button>
+      <button class="start" onclick="applyTheme(true)">Dark Mode</button>
+    </div>`;
+
+  const qCount = card.querySelector('#set-qcount');
+  const timerChk = card.querySelector('#set-timer-toggle');
+  const qTime = card.querySelector('#set-qtime');
+  const categorySelect = card.querySelector('#category-select');
+
+  qCount.oninput = e => settings.numQuestions = Math.max(1, +e.target.value);
+  timerChk.onchange = e => {
+    settings.timerOn = e.target.checked;
+    qTime.disabled = !settings.timerOn;
+  };
+  qTime.oninput = e => settings.timePerQuestion = Math.max(5, +e.target.value);
+  categorySelect.value = settings.category || "any";
+  categorySelect.onchange = e => settings.category = e.target.value;
+}
+
+function startQuiz() {
+  const category = settings.category || "any";
+  const categoryParam = category !== "any" ? `&category=${category}` : "";
+
+  const apiURL = `https://opentdb.com/api.php?amount=${settings.numQuestions}${categoryParam}&type=multiple`;
+
+  fetch(apiURL)
+    .then(res => res.json())
+    .then(data => {
+      if (data.response_code !== 0 || !Array.isArray(data.results)) {
+        throw new Error("Failed to load questions");
+      }
+
+      if (data.results.length === 0) {
+        throw new Error("No questions available for this category.");
+      }
+
+      questions = data.results.map(q => {
+        const choices = [...q.incorrect_answers.map(decodeHTMLEntities)];
+        const answerText = decodeHTMLEntities(q.correct_answer);
+        const answerIndex = Math.floor(Math.random() * (choices.length + 1));
+        choices.splice(answerIndex, 0, answerText);
+        return {
+          question: decodeHTMLEntities(q.question),
+          choices,
+          answer: answerIndex
+        };
+      });
+
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    })
+    .catch(err => {
+      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
+    });
+}
 
     /* ---------- SIGN-UP ---------- */
     const users=[
@@ -437,46 +617,50 @@ function handleLogIn(e) {
     </div>`;
 }
 
-// Show leaderboard with professional styling
 function showLeaderboard() {
-  fetch('/api/leaderboard')
-    .then(res => {
+  Promise.all([
+    fetch('/api/leaderboard').then(res => {
       if (!res.ok) throw new Error("Unable to retrieve leaderboard data.");
       return res.json();
-    })
-    .then(data => {
-      card.innerHTML = `
-        <button class="back-arrow" onclick="showWelcome()">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <h1 class="title">🏆 Leaderboard</h1>
-        <p class="subtitle">Top 100 scores submitted by players</p>
-        <div class="leaderboard-container">
-          <div class="leaderboard-header">
-            <span>#</span>
-            <span>Username</span>
-            <span>Score</span>
-            <span>Date</span>
+    }),
+    Promise.resolve(JSON.parse(localStorage.getItem("localLeaderboard") || "[]"))
+  ])
+  .then(([serverScores, localScores]) => {
+    const combined = [...serverScores, ...localScores];
+    combined.sort((a, b) => b.score - a.score); // Highest score first
+    const top100 = combined.slice(0, 100);
+
+    card.innerHTML = `
+      <button class="back-arrow" onclick="showWelcome()">
+        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1 class="title">🏆 Leaderboard</h1>
+      <p class="subtitle">Top 100 scores submitted by players</p>
+      <div class="leaderboard-box">
+        <div class="leaderboard-header">
+          <span>#</span>
+          <span>Username</span>
+          <span>Score</span>
+          <span>Date</span>
+        </div>
+        ${top100.map((entry, i) => `
+          <div class="leaderboard-entry">
+            <span class="rank">${i + 1}</span>
+            <span class="user" title="${entry.username}">${entry.username}</span>
+            <span class="score">${entry.score} / ${entry.total}</span>
+            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
           </div>
-          <div class="leaderboard-entries">
-            ${data.map((entry, i) => `
-              <div class="leaderboard-row">
-                <span>${i + 1}</span>
-                <span>${entry.username}</span>
-                <span>${entry.score} / ${entry.total}</span>
-                <span>${new Date(entry.timestamp).toLocaleString()}</span>
-              </div>
-            `).join("")}
-          </div>
-        </div>`;
-    })
-    .catch(err => {
-      card.innerHTML = `
-        <div class="error-box">
-          <h2>⚠️ Unable to load leaderboard</h2>
-          <p>${err.message}</p>
-        </div>`;
-    });
+        `).join("")}
+      </div>
+    `;
+  })
+  .catch(err => {
+    card.innerHTML = `
+      <div class="error-box">
+        <h2>⚠️ Unable to load leaderboard</h2>
+        <p>${err.message}</p>
+      </div>`;
+  });
 }
 
     /* ---------- INIT ---------- */
@@ -484,8 +668,8 @@ function showLeaderboard() {
     window.showSettings  = showSettings;
     window.showLogInForm = showLogInForm;
     window.showSignUpForm= showSignUpForm;
-    window.showWelcome   = showWelcome;   /* ← added export */
-    window.startQuiz     = startQuiz;     /* ← added export */
+    window.showWelcome   = showWelcome;   
+    window.startQuiz     = startQuiz;     
   </script>
 </body>
 </html>
