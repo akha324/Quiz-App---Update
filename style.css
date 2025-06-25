@@ -64,13 +64,26 @@ body.dark .bg-video.night{display:block}
 .theme-toggle:active{transform:scale(.96);box-shadow:0 2px 4px rgba(255,202,40,.4)}
 
 /* ─────────── GLASS CARD ─────────── */
-.card{
-  background:rgba(255,255,255,.07);padding:36px 24px;border-radius:16px;
-  backdrop-filter:blur(10px);width:90%;max-width:490px;max-height:85vh;
-  overflow-y:auto;text-align:center;
-  box-shadow:0 10px 30px rgba(0,0,0,.3);
-  animation:fadeIn .9s ease forwards;opacity:0;transform:translateY(30px);
+.card {
+  background: rgba(255,255,255,.07);
+  padding: 24px 20px;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  width: 90%;
+  max-width: 490px;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,.3);
+  animation: fadeIn .9s ease forwards;
+  opacity: 0;
+  transform: translateY(30px);
 }
+
+.card label {
+  margin-bottom: 10px !important; /* reduce excessive spacing */
+}
+
 @keyframes fadeIn{to{opacity:1;transform:translateY(0)}}
 
 /* ─────────── USERNAME DISPLAY ─────────── */
@@ -267,4 +280,123 @@ button.share-social {
 }
 button.share-social:hover {
   background: #0288d1;
+}
+
+/* ────── LEADERBOARD STYLING ────── */
+
+/* Leaderboard container */
+.leaderboard-box {
+  background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
+  border-radius: 16px;
+  padding: 24px 28px;
+  margin: 32px auto;
+  max-width: 680px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  color: #eee;
+  font-family: 'Segoe UI', sans-serif;
+  overflow-x: auto;
+}
+
+/* Header row */
+.leaderboard-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 2fr; /* Better visual spacing */
+  gap: 12px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #aaa;
+  border-bottom: 2px solid #333;
+  letter-spacing: 0.04em;
+}
+
+/* Entry row */
+.leaderboard-entry {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr 2fr; /* Match header */
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #2a2a2a;
+  transition: background 0.2s ease;
+  align-items: center;
+}
+
+/* Hover effect */
+.leaderboard-entry:hover {
+  background-color: #1e1e1e;
+}
+
+/* Column styles */
+.leaderboard-entry .rank {
+  text-align: center;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.leaderboard-entry .user {
+  font-weight: 600;
+  color: #5bcfff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.leaderboard-entry .score {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.leaderboard-entry .timestamp {
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #bbb;
+}
+
+/* ────── Responsive ────── */
+@media (max-width: 640px) {
+  .leaderboard-box {
+    padding: 16px;
+  }
+
+  .leaderboard-header {
+    display: none;
+  }
+
+  .leaderboard-entry {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    font-size: 0.95rem;
+  }
+
+  .leaderboard-entry span {
+    display: block;
+    padding: 2px 0;
+    word-break: break-word;
+  }
+
+  .leaderboard-entry .rank::before {
+    content: "Rank: ";
+    font-weight: 600;
+  }
+
+  .leaderboard-entry .user::before {
+    content: "User: ";
+    font-weight: 600;
+  }
+
+  .leaderboard-entry .score::before {
+    content: "Score: ";
+    font-weight: 600;
+  }
+
+  .leaderboard-entry .timestamp::before {
+    content: "Date: ";
+    font-weight: 300;
+  }
 }
