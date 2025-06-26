@@ -629,12 +629,18 @@ function showLeaderboard() {
     <h1 class="title">🏆 Leaderboard</h1>
     <p class="subtitle">Top 10 Scores</p>
     <div class="leaderboard-box">
-      ${top10.map(entry => `
-        <div class="leaderboard-entry" style="margin-bottom:16px;">
-          <div>user: --> ${entry.username}</div>
-          <div>score: --> ${entry.score}</div>
-          <div>total: --> ${entry.total}</div>
-          <div>timestamp: --> ${new Date(entry.timestamp).toLocaleString()}</div>
+      <div style="display: flex; font-weight: bold; margin-bottom: 10px;">
+        <div style="flex: 1;">Rank</div>
+        <div style="flex: 2;">Username</div>
+        <div style="flex: 2;">Score</div>
+        <div style="flex: 3;">Date & Time</div>
+      </div>
+      ${top10.map((entry, i) => `
+        <div class="leaderboard-entry" style="display: flex; margin-bottom: 10px;">
+          <div style="flex: 1;">#${i + 1}</div>
+          <div style="flex: 2;">${entry.username}</div>
+          <div style="flex: 2;">${entry.score}/${entry.total}</div>
+          <div style="flex: 3;">${new Date(entry.timestamp).toLocaleString()}</div>
         </div>
       `).join("")}
     </div>
