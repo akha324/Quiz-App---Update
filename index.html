@@ -641,7 +641,7 @@ function saveToLeaderboard() {
       const stored = localStorage.getItem("localLeaderboard");
       local = Array.isArray(JSON.parse(stored)) ? JSON.parse(stored) : [];
     } catch {
-      console.warn("⚠️ Invalid or missing localLeaderboard data. Reinitializing.");
+      console.warn("⚠️ Invalid or missing leaderboard data. Reinitializing.");
       local = [];
     }
 
