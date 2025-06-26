@@ -115,40 +115,53 @@ function saveToLeaderboard() {
     timestamp: new Date().toISOString()
   };
 
-  const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
-  local.push(scoreData);
-  localStorage.setItem("localLeaderboard", JSON.stringify(local));
-
-  alert("✅ Score saved to leaderboard!");
+  fetch("/api/score", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(scoreData)
+  })
+    .then(res => {
+      if (!res.ok) return res.json().then(err => { throw new Error(err.error || "Failed to save") });
+      return res.json();
+    })
+    .then(() => alert("✅ Score saved to leaderboard!"))
+    .catch(err => alert("❌ Failed to save score: " + err.message));
 }
 
 function showLeaderboard() {
-  const localScores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
-  localScores.sort((a, b) => b.score - a.score);
-  const top10 = localScores.slice(0, 10);
-
-  card.innerHTML = `
-    <button class="back-arrow" onclick="showWelcome()">
-      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <h1 class="title">🏆 Leaderboard</h1>
-    <p class="subtitle">Top 10 Scores</p>
-    <div class="leaderboard-box">
-      <ol class="leaderboard-list">
-        ${top10.map((entry, i) => `
-          <li class="leaderboard-entry">
-            <span class="rank">#${i + 1}</span>
-            <span class="user">${entry.username}</span>
-            <span class="score">${entry.score}/${entry.total}</span>
-            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-          </li>
-        `).join("")}
-      </ol>
-    </div>`;
+  fetch("/api/leaderboard")
+    .then(res => {
+      if (!res.ok) throw new Error("Failed to fetch leaderboard");
+      return res.json();
+    })
+    .then(localScores => {
+      localScores.sort((a, b) => b.score - a.score);
+      const top10 = localScores.slice(0, 10);
+      card.innerHTML = `
+        <button class="back-arrow" onclick="showWelcome()">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h1 class="title">🏆 Leaderboard</h1>
+        <p class="subtitle">Top 10 Scores</p>
+        <div class="leaderboard-box">
+          <ol class="leaderboard-list">
+            ${top10.map((entry, i) => `
+              <li class="leaderboard-entry">
+                <span class="rank">#${i + 1}</span>
+                <span class="user">${entry.username}</span>
+                <span class="score">${entry.score}/${entry.total}</span>
+                <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+              </li>
+            `).join("")}
+          </ol>
+        </div>`;
+    })
+    .catch(err => {
+      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
+    });
 }
 
 function api(path, data) {
-  // Simulate a working API only for /signup, /login, /reset-request
   if (path === "/signup") {
     return Promise.resolve({ message: "Account created!" });
   } else if (path === "/login") {
