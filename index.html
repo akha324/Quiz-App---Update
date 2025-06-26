@@ -561,25 +561,32 @@ function handleLogIn(e) {
       });
     }
 
- function buildResult(){
-  // Send score to server
-  fetch('/api/score', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      username: document.getElementById("user-display").textContent.replace("👤 ","") || "guest",
+function buildResult() {
+  try {
+    const display = document.getElementById("user-display");
+    const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+
+    const scoreData = {
+      username,
       score,
       total: settings.numQuestions,
       timestamp: new Date().toISOString()
-    })
-  }).catch(err => console.warn("Failed to save score:", err));
+    };
 
-  card.innerHTML=`
+    const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+    local.push(scoreData);
+    localStorage.setItem("localLeaderboard", JSON.stringify(local));
+  } catch (err) {
+    console.warn("⚠️ Failed to save score", err);
+  }
+
+  card.innerHTML = `
     <h2>Quiz Complete!</h2>
     <p class="score">${score} / ${settings.numQuestions}</p>
     <div class="btn-group">
       <button class="retry" onclick="startQuiz()">Try Again</button>
       <button class="btn-home" onclick="showWelcome()">Go Home</button>
+      <button class="start" onclick="saveToLeaderboard()">Save to Leaderboard</button>
     </div>`;
 }
 
