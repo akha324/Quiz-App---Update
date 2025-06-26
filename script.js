@@ -123,10 +123,28 @@ function saveToLeaderboard() {
 }
 
 function showLeaderboard() {
-  const localScores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  let localScores = [];
+  try {
+    localScores = JSON.parse(localStorage.getItem("localLeaderboard")) || [];
+  } catch (e) {
+    console.warn("⚠️ Invalid leaderboard data:", e);
+    localScores = [];
+  }
+
+  // Filter out invalid entries
+  localScores = localScores.filter(entry =>
+    entry &&
+    typeof entry.username === "string" &&
+    typeof entry.score === "number" &&
+    typeof entry.total === "number" &&
+    typeof entry.timestamp === "string"
+  );
+
+  // Sort and slice top 10
   localScores.sort((a, b) => b.score - a.score);
   const top10 = localScores.slice(0, 10);
 
+  // Build HTML
   card.innerHTML = `
     <button class="back-arrow" onclick="showWelcome()">
       <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
@@ -138,7 +156,7 @@ function showLeaderboard() {
         ${top10.map((entry, i) => `
           <li class="leaderboard-entry">
             <span class="rank">#${i + 1}</span>
-            <span class="user">${entry.username}</span>
+            <span class="user">${entry.username || "guest"}</span>
             <span class="score">${entry.score}/${entry.total}</span>
             <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
           </li>
