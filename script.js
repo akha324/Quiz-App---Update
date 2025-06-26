@@ -124,32 +124,41 @@ function saveToLeaderboard() {
 
 function showLeaderboard() {
   const localScores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
-  localScores.sort((a, b) => b.score - a.score);
-  const top10 = localScores.slice(0, 10);
 
-  card.innerHTML = `
-    <button class="back-arrow" onclick="showWelcome()">
-      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <h1 class="title">🏆 Leaderboard</h1>
-    <p class="subtitle">Top 10 Scores</p>
-    <div class="leaderboard-box">
-      <div style="display: flex; font-weight: bold; margin-bottom: 10px;">
-        <div style="flex: 1;">Rank</div>
-        <div style="flex: 2;">Username</div>
-        <div style="flex: 2;">Score</div>
-        <div style="flex: 3;">Date & Time</div>
-      </div>
-      ${top10.map((entry, i) => `
-        <div class="leaderboard-entry" style="display: flex; margin-bottom: 10px;">
-          <div style="flex: 1;">#${i + 1}</div>
-          <div style="flex: 2;">${entry.username}</div>
-          <div style="flex: 2;">${entry.score}/${entry.total}</div>
-          <div style="flex: 3;">${new Date(entry.timestamp).toLocaleString()}</div>
-        </div>
-      `).join("")}
-    </div>
-  `;
+  fetch("/api/leaderboard")
+    .then(res => res.ok ? res.json() : Promise.resolve([]))
+    .catch(() => Promise.resolve([])) // Fix: return a Promise here, not a raw array
+    .then(serverScores => {
+      const combined = [...serverScores, ...localScores];
+      combined.sort((a, b) => b.score - a.score);
+      const top10 = combined.slice(0, 10);
+
+      card.innerHTML = `
+        <button class="back-arrow" onclick="showWelcome()">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <h1 class="title">🏆 Leaderboard</h1>
+        <p class="subtitle">Top 10 Scores</p>
+        <div class="leaderboard-box">
+          <ol class="leaderboard-list">
+            ${top10.map((entry, i) => `
+              <li class="leaderboard-entry">
+                <span class="rank">#${i + 1}</span>
+                <span class="user">${entry.username}</span>
+                <span class="score">${entry.score}/${entry.total}</span>
+                <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+              </li>
+            `).join("")}
+          </ol>
+        </div>`;
+    })
+    .catch(err => {
+      card.innerHTML = `
+        <div class="error-box">
+          <h2>❌ Unable to Load Leaderboard</h2>
+          <p>${err.message}</p>
+        </div>`;
+    });
 }
 
 function api(path, data) {
