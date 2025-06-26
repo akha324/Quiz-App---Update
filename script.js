@@ -126,7 +126,7 @@ function saveToLeaderboard() {
 
 function showLeaderboard() {
   Promise.all([
-    fetch("/api/leaderboard").then(res => res.ok ? res.json() : []),
+    fetch("/api/leaderboard").then(res => res.ok ? res.json() : Promise.resolve([])).catch(() => []),
     Promise.resolve(JSON.parse(localStorage.getItem("localLeaderboard") || "[]"))
   ])
   .then(([serverScores, localScores]) => {
