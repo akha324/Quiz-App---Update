@@ -400,3 +400,9 @@ button.share-social:hover {
     font-weight: 300;
   }
 }
+
+.login-form label.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
