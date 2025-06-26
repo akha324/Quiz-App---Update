@@ -105,88 +105,25 @@ function showResetForm() {
 }
 
 function saveToLeaderboard() {
-  try {
-    const display = document.getElementById("user-display");
-    const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
-
-    const scoreData = {
-      username,
-      score: typeof score === "number" ? score : 0,
-      total: typeof settings.numQuestions === "number" ? settings.numQuestions : 0,
-      timestamp: new Date().toISOString()
-    };
-
-    let local = [];
-    try {
-      const stored = localStorage.getItem("localLeaderboard");
-      local = Array.isArray(JSON.parse(stored)) ? JSON.parse(stored) : [];
-    } catch {
-      console.warn("⚠️ Invalid or missing localLeaderboard data. Reinitializing.");
-      local = [];
-    }
-
-    local.push(scoreData);
-    localStorage.setItem("localLeaderboard", JSON.stringify(local));
-
-    alert("✅ Score saved to leaderboard!");
-  } catch (err) {
-    console.error("❌ Failed to save score:", err);
-    alert("❌ Failed to save score. Please try again.");
-  }
-}
-
-function showLeaderboard() {
   const display = document.getElementById("user-display");
   const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
-  // Attempt to save the most recent score if it's not already saved
-  try {
-    const scoreData = {
-      username,
-      score: typeof score === "number" ? score : 0,
-      total: typeof settings.numQuestions === "number" ? settings.numQuestions : 0,
-      timestamp: new Date().toISOString()
-    };
+  const scoreData = {
+    username,
+    score,
+    total: settings.numQuestions,
+    timestamp: new Date().toISOString()
+  };
 
-    let local = [];
-    try {
-      const stored = localStorage.getItem("localLeaderboard");
-      local = Array.isArray(JSON.parse(stored)) ? JSON.parse(stored) : [];
-    } catch {
-      local = [];
-    }
+  const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  local.push(scoreData);
+  localStorage.setItem("localLeaderboard", JSON.stringify(local));
 
-    const alreadySaved = local.some(entry =>
-      entry.username === scoreData.username &&
-      entry.score === scoreData.score &&
-      entry.total === scoreData.total
-    );
+  alert("✅ Score saved to leaderboard!");
+}
 
-    if (!alreadySaved && scoreData.total > 0) {
-      local.push(scoreData);
-      localStorage.setItem("localLeaderboard", JSON.stringify(local));
-    }
-  } catch (err) {
-    console.warn("⚠️ Could not auto-save score to leaderboard:", err);
-  }
-
-  // Now retrieve and display
-  let localScores = [];
-  try {
-    localScores = JSON.parse(localStorage.getItem("localLeaderboard")) || [];
-  } catch (e) {
-    console.warn("⚠️ Invalid leaderboard data:", e);
-    localScores = [];
-  }
-
-  localScores = localScores.filter(entry =>
-    entry &&
-    typeof entry.username === "string" &&
-    typeof entry.score === "number" &&
-    typeof entry.total === "number" &&
-    typeof entry.timestamp === "string"
-  );
-
+function showLeaderboard() {
+  const localScores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
   localScores.sort((a, b) => b.score - a.score);
   const top10 = localScores.slice(0, 10);
 
@@ -201,7 +138,7 @@ function showLeaderboard() {
         ${top10.map((entry, i) => `
           <li class="leaderboard-entry">
             <span class="rank">#${i + 1}</span>
-            <span class="user">${entry.username || "guest"}</span>
+            <span class="user">${entry.username}</span>
             <span class="score">${entry.score}/${entry.total}</span>
             <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
           </li>
@@ -230,11 +167,4 @@ function api(path, data) {
   return Promise.reject(new Error("Endpoint not supported in static mode."));
 }
 
-showWelcome();
-window.showSettings  = showSettings;
-window.showLogInForm = showLogInForm;
-window.showSignUpForm= showSignUpForm;
-window.showWelcome   = showWelcome;   
-window.startQuiz     = startQuiz;
-window.saveToLeaderboard = saveToLeaderboard; // ← THIS LINE FIXES THE ISSUE
-
+window.showLeaderboard = showLeaderboard;
