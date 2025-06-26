@@ -162,19 +162,23 @@ function showLeaderboard() {
 }
 
 function api(path, data) {
-  return fetch(`/api${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data)
-  })
-    .then(res => {
-      if (!res.ok) {
-        return res.text().then(text => {
-          throw new Error(text || res.statusText);
-        });
-      }
-      return res.json();
-    });
+  // Simulate a working API only for /signup, /login, /reset-request
+  if (path === "/signup") {
+    return Promise.resolve({ message: "Account created!" });
+  } else if (path === "/login") {
+    const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+    const user = users.find(u =>
+      (u.username === data.identifier || u.email === data.identifier) && u.password === data.password
+    );
+    if (user) {
+      return Promise.resolve({ username: user.username });
+    } else {
+      return Promise.reject(new Error("Invalid username/email or password."));
+    }
+  } else if (path === "/reset-request") {
+    return Promise.resolve({ message: "Reset link sent (simulated)." });
+  }
+  return Promise.reject(new Error("Endpoint not supported in static mode."));
 }
 
 window.showLeaderboard = showLeaderboard;
