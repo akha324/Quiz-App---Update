@@ -119,9 +119,7 @@ function saveToLeaderboard() {
   local.push(scoreData);
   localStorage.setItem("localLeaderboard", JSON.stringify(local));
 
-  api("/score", scoreData)
-    .then(() => alert("✅ Score saved to leaderboard!"))
-    .catch(() => alert("⚠️ Score saved locally only. Server unreachable."));
+  alert("✅ Score saved to leaderboard!");
 }
 
 function showLeaderboard() {
