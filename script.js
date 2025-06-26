@@ -125,41 +125,27 @@ function saveToLeaderboard() {
 }
 
 function showLeaderboard() {
-  Promise.all([
-    fetch("/api/leaderboard").then(res => res.ok ? res.json() : Promise.resolve([])).catch(() => []),
-    Promise.resolve(JSON.parse(localStorage.getItem("localLeaderboard") || "[]"))
-  ])
-  .then(([serverScores, localScores]) => {
-    const combined = [...serverScores, ...localScores];
-    combined.sort((a, b) => b.score - a.score);
-    const top10 = combined.slice(0, 10);
+  const localScores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  localScores.sort((a, b) => b.score - a.score);
+  const top10 = localScores.slice(0, 10);
 
-    card.innerHTML = `
-      <button class="back-arrow" onclick="showWelcome()">
-        <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <h1 class="title">🏆 Leaderboard</h1>
-      <p class="subtitle">Top 10 Scores</p>
-      <div class="leaderboard-box">
-        <ol class="leaderboard-list">
-          ${top10.map((entry, i) => `
-            <li class="leaderboard-entry">
-              <span class="rank">#${i + 1}</span>
-              <span class="user">${entry.username}</span>
-              <span class="score">${entry.score}/${entry.total}</span>
-              <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-            </li>
-          `).join("")}
-        </ol>
-      </div>`;
-  })
-  .catch(err => {
-    card.innerHTML = `
-      <div class="error-box">
-        <h2>❌ Unable to Load Leaderboard</h2>
-        <p>${err.message}</p>
-      </div>`;
-  });
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">🏆 Leaderboard</h1>
+    <p class="subtitle">Top 10 scores submitted by players</p>
+    <div class="leaderboard-box">
+      ${top10.map(entry => `
+        <div class="leaderboard-entry" style="margin-bottom:16px;">
+          <div>user: --> ${entry.username}</div>
+          <div>score: --> ${entry.score}</div>
+          <div>total: --> ${entry.total}</div>
+          <div>timestamp: --> ${new Date(entry.timestamp).toLocaleString()}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
 }
 
 function api(path, data) {
