@@ -136,6 +136,41 @@ function saveToLeaderboard() {
 }
 
 function showLeaderboard() {
+  const display = document.getElementById("user-display");
+  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+
+  // Attempt to save the most recent score if it's not already saved
+  try {
+    const scoreData = {
+      username,
+      score: typeof score === "number" ? score : 0,
+      total: typeof settings.numQuestions === "number" ? settings.numQuestions : 0,
+      timestamp: new Date().toISOString()
+    };
+
+    let local = [];
+    try {
+      const stored = localStorage.getItem("localLeaderboard");
+      local = Array.isArray(JSON.parse(stored)) ? JSON.parse(stored) : [];
+    } catch {
+      local = [];
+    }
+
+    const alreadySaved = local.some(entry =>
+      entry.username === scoreData.username &&
+      entry.score === scoreData.score &&
+      entry.total === scoreData.total
+    );
+
+    if (!alreadySaved && scoreData.total > 0) {
+      local.push(scoreData);
+      localStorage.setItem("localLeaderboard", JSON.stringify(local));
+    }
+  } catch (err) {
+    console.warn("⚠️ Could not auto-save score to leaderboard:", err);
+  }
+
+  // Now retrieve and display
   let localScores = [];
   try {
     localScores = JSON.parse(localStorage.getItem("localLeaderboard")) || [];
@@ -144,7 +179,6 @@ function showLeaderboard() {
     localScores = [];
   }
 
-  // Filter out invalid entries
   localScores = localScores.filter(entry =>
     entry &&
     typeof entry.username === "string" &&
@@ -153,11 +187,9 @@ function showLeaderboard() {
     typeof entry.timestamp === "string"
   );
 
-  // Sort and slice top 10
   localScores.sort((a, b) => b.score - a.score);
   const top10 = localScores.slice(0, 10);
 
-  // Build HTML
   card.innerHTML = `
     <button class="back-arrow" onclick="showWelcome()">
       <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
