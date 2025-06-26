@@ -105,21 +105,34 @@ function showResetForm() {
 }
 
 function saveToLeaderboard() {
-  const display = document.getElementById("user-display");
-  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+  try {
+    const display = document.getElementById("user-display");
+    const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
-  const scoreData = {
-    username,
-    score,
-    total: settings.numQuestions,
-    timestamp: new Date().toISOString()
-  };
+    const scoreData = {
+      username,
+      score: typeof score === "number" ? score : 0,
+      total: typeof settings.numQuestions === "number" ? settings.numQuestions : 0,
+      timestamp: new Date().toISOString()
+    };
 
-  const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
-  local.push(scoreData);
-  localStorage.setItem("localLeaderboard", JSON.stringify(local));
+    let local = [];
+    try {
+      const stored = localStorage.getItem("localLeaderboard");
+      local = Array.isArray(JSON.parse(stored)) ? JSON.parse(stored) : [];
+    } catch {
+      console.warn("⚠️ Invalid or missing localLeaderboard data. Reinitializing.");
+      local = [];
+    }
 
-  alert("✅ Score saved to leaderboard!");
+    local.push(scoreData);
+    localStorage.setItem("localLeaderboard", JSON.stringify(local));
+
+    alert("✅ Score saved to leaderboard!");
+  } catch (err) {
+    console.error("❌ Failed to save score:", err);
+    alert("❌ Failed to save score. Please try again.");
+  }
 }
 
 function showLeaderboard() {
