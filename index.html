@@ -627,28 +627,22 @@ function showLeaderboard() {
   ])
   .then(([serverScores, localScores]) => {
     const combined = [...serverScores, ...localScores];
-    combined.sort((a, b) => b.score - a.score); // Highest score first
-    const top100 = combined.slice(0, 100);
+    combined.sort((a, b) => b.score - a.score);
+    const top10 = combined.slice(0, 10);
 
     card.innerHTML = `
       <button class="back-arrow" onclick="showWelcome()">
         <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <h1 class="title">🏆 Leaderboard</h1>
-      <p class="subtitle">Top 100 scores submitted by players</p>
+      <p class="subtitle">Top 10 scores submitted by players</p>
       <div class="leaderboard-box">
-        <div class="leaderboard-header">
-          <span>#</span>
-          <span>Username</span>
-          <span>Score</span>
-          <span>Date</span>
-        </div>
-        ${top100.map((entry, i) => `
-          <div class="leaderboard-entry">
-            <span class="rank">${i + 1}</span>
-            <span class="user" title="${entry.username}">${entry.username}</span>
-            <span class="score">${entry.score} / ${entry.total}</span>
-            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+        ${top10.map(entry => `
+          <div class="leaderboard-entry" style="margin-bottom:16px;">
+            <div>user: --> ${entry.username}</div>
+            <div>score: --> ${entry.score}</div>
+            <div>total: --> ${entry.total}</div>
+            <div>timestamp: --> ${new Date(entry.timestamp).toLocaleString()}</div>
           </div>
         `).join("")}
       </div>
