@@ -98,9 +98,9 @@
     let allQuestions=[],pool=[],current=[],idx=0,score=0;
     const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}};
 
-async function loadQuestions(){
-  const amount = settings.numQuestions || 10;
-  const apiURL = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
+async function loadQuestions(amount = 10, category = "any") {
+  const catParam = category !== "any" ? `&category=${category}` : "";
+  const apiURL = `https://opentdb.com/api.php?amount=${amount}${catParam}&type=multiple`;
 
   const res = await fetch(apiURL);
   const data = await res.json();
@@ -124,6 +124,7 @@ async function loadQuestions(){
   shuffle(allQuestions);
   pool = [...allQuestions];
 }
+
 
     /* ---------- WELCOME ---------- */
     function showWelcome(){
@@ -205,37 +206,6 @@ function showSettings() {
   };
   qTime.oninput = e => settings.timePerQuestion = Math.max(5, +e.target.value);
   categorySelect.onchange = e => settings.category = e.target.value;
-}
-
-function startQuiz() {
-  const category = settings.category || "any";
-  const categoryParam = category !== "any" ? `&category=${category}` : "";
-
-  fetch(`https://opentdb.com/api.php?amount=${settings.numQuestions}${categoryParam}&type=multiple`)
-    .then(res => res.json())
-    .then(data => {
-      if (data.response_code !== 0 || !Array.isArray(data.results))
-        throw new Error("Failed to load questions");
-
-      questions = data.results.map(q => {
-        const choices = [...q.incorrect_answers.map(decodeHTMLEntities)];
-        const answerText = decodeHTMLEntities(q.correct_answer);
-        const answerIndex = Math.floor(Math.random() * (choices.length + 1));
-        choices.splice(answerIndex, 0, answerText);
-        return {
-          question: decodeHTMLEntities(q.question),
-          choices,
-          answer: answerIndex
-        };
-      });
-
-      currentQuestion = 0;
-      score = 0;
-      showQuestion();
-    })
-    .catch(err => {
-      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
-    });
 }
 
 function showSettings() {
@@ -590,22 +560,6 @@ function handleLogIn(e) {
         <button class="btn-home" onclick="showWelcome()">Go Home</button>`;
     }
     
-    async function startQuiz(){
-  try {
-    await loadQuestions();
-    if (pool.length === 0) return showOutOfQuestions();
-    
-    // Adjust to use however many were fetched
-    const available = Math.min(settings.numQuestions, pool.length);
-    idx = score = 0;
-    current = pool.splice(0, available);
-    settings.numQuestions = available; // temporarily update
-    buildQuestion();
-  } catch (err) {
-    buildError(err.message);
-  }
-}
-    
     function buildResult(){
   card.innerHTML=`
     <h2>Quiz Complete!</h2>
@@ -615,6 +569,23 @@ function handleLogIn(e) {
       <button class="btn-home" onclick="showWelcome()">Go Home</button>
       <button class="start" onclick="saveToLeaderboard()">Save to Leaderboard</button>
     </div>`;
+}
+
+async function startQuiz() {
+  try {
+    const category = settings.category || "any";
+    await loadQuestions(settings.numQuestions, category);
+
+    if (pool.length === 0) return showOutOfQuestions();
+
+    const available = Math.min(settings.numQuestions, pool.length);
+    idx = score = 0;
+    current = pool.splice(0, available);
+    settings.numQuestions = available; // temporarily update
+    buildQuestion();
+  } catch (err) {
+    buildError(err.message);
+  }
 }
 
 function showLeaderboard() {
