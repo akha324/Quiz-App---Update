@@ -198,4 +198,11 @@ function api(path, data) {
   return Promise.reject(new Error("Endpoint not supported in static mode."));
 }
 
-window.showLeaderboard = showLeaderboard;
+showWelcome();
+window.showSettings  = showSettings;
+window.showLogInForm = showLogInForm;
+window.showSignUpForm= showSignUpForm;
+window.showWelcome   = showWelcome;   
+window.startQuiz     = startQuiz;
+window.saveToLeaderboard = saveToLeaderboard; // ← THIS LINE FIXES THE ISSUE
+
