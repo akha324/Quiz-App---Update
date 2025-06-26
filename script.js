@@ -132,17 +132,17 @@ function showLeaderboard() {
   .then(([serverScores, localScores]) => {
     const combined = [...serverScores, ...localScores];
     combined.sort((a, b) => b.score - a.score);
-    const top100 = combined.slice(0, 100);
+    const top10 = combined.slice(0, 10);
 
     card.innerHTML = `
       <button class="back-arrow" onclick="showWelcome()">
         <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
       </button>
       <h1 class="title">🏆 Leaderboard</h1>
-      <p class="subtitle">Top 100 Scores</p>
+      <p class="subtitle">Top 10 Scores</p>
       <div class="leaderboard-box">
         <ol class="leaderboard-list">
-          ${top100.map((entry, i) => `
+          ${top10.map((entry, i) => `
             <li class="leaderboard-entry">
               <span class="rank">#${i + 1}</span>
               <span class="user">${entry.username}</span>
