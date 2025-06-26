@@ -615,13 +615,13 @@ function buildResult() {
     
     function buildResult(){
   card.innerHTML=`
-    <h2>Quiz Complete!</h2>
-    <p class="score">${score} / ${settings.numQuestions}</p>
-    <div class="btn-group">
-      <button class="retry" onclick="startQuiz()">Try Again</button>
-      <button class="btn-home" onclick="showWelcome()">Go Home</button>
-      <button class="start" onclick="saveToLeaderboard()">Save to Leaderboard</button>
-    </div>`;
+  <h2>Quiz Complete!</h2>
+  <p class="score">${score} / ${settings.numQuestions}</p>
+  <div class="btn-group">
+    <button class="retry" onclick="startQuiz()">Try Again</button>
+    <button class="btn-home" onclick="showWelcome()">Go Home</button>
+    <button class="start" onclick="saveToLeaderboard()">Save to Leaderboard</button>
+  </div>`;
 }
 
 function saveToLeaderboard() {
