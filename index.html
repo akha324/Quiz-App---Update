@@ -337,15 +337,21 @@ function showLogInForm() {
   };
 }
 
-function handleLogIn(e) {
+async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
   const pw = f.password.value;
 
+  // ✅ If you use hashing, hash the input password
+  const hash = await sha256(pw);
+
+  // ✅ Always read from localStorage!
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
   const user = users.find(u =>
     (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-    u.password === pw
+    u.password === hash  // compare hashed version
   );
 
   const msg = card.querySelector("#login-message");
@@ -584,12 +590,14 @@ function saveToLeaderboard() {
   </script>
 </body>
 <script>
-  // ✅ Add the missing sha256 hash function
+
   async function sha256(str) {
-    const buf = new TextEncoder().encode(str);
-    const hash = await crypto.subtle.digest("SHA-256", buf);
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-  }
+  const buf = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
   function handleLogIn(e) {
     e.preventDefault();
