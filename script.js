@@ -52,19 +52,22 @@ function buildSignupForm() {
 function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
   sha256(f.password.value).then(hash => {
     const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
     const user = users.find(u =>
-      (u.username === f.identifier.value.trim() || u.email === f.identifier.value.trim()) && u.password === hash
+      (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
+      u.password === hash
     );
     if (user) {
       const uDisp = document.getElementById("user-display");
       uDisp.textContent = `👤 ${user.username}`;
       uDisp.style.display = "block";
-      card.querySelector("#login-ok").style.display = "block";
+      card.querySelector("#login-message").style.display = "block";
       card.querySelector("#login-err").style.display = "none";
       setTimeout(showWelcome, 1200);
     } else {
+      card.querySelector("#login-message").style.display = "none";
       card.querySelector("#login-err").style.display = "block";
     }
   });
