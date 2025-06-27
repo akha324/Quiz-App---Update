@@ -407,51 +407,73 @@ button.share-social:hover {
   gap: 8px;
 }
 
-/* ─────────── PROFILE PAGE ─────────── */
-.profile-box {
+#profile-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 12px 16px;
+  border-radius: 12px;
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 20px;
-  border-radius: 10px;
+  align-items: center;
+  gap: 12px;
+  z-index: 1000;
 }
 
-.profile-box img {
-  display: block;
+.profile-picture {
+  width: 60px;
+  height: 60px;
+  border: 3px solid #f8be2e;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-picture img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 50%;
-  border: 4px solid #f8be2e;
 }
 
-.profile-box > div:last-child {
-  flex: 1;
-  min-height: 100px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  background: transparent;
+.profile-info {
+  display: flex;
+  flex-direction: column;
 }
 
-/* Profile page username + status */
-.profile-box + div {
-  margin-top: 20px;
-  text-align: right;
+.profile-info p {
+  margin: 0;
+  color: #fff;
 }
 
-.profile-box + div p {
-  margin: 4px 0;
-}
-
-.profile-box + div p:first-child {
-  font-weight: bold;
-}
-
-.profile-box + div p:nth-child(2) {
+.profile-info .status {
   color: #4caf50;
 }
 
-.profile-box + div a {
-  color: #ff5252;
+.profile-info .logout-link {
+  color: #f44336;
   text-decoration: underline;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+body:not(.dark) #profile-container {
+  background: rgba(255, 255, 255, 0.3);
+}
+body:not(.dark) #profile-container .profile-info p {
+  color: #111;
+}
+body:not(.dark) #profile-container .logout-link {
+  color: #e53935;
+}
+
+.settings-section {
+  margin-top: 40px;
+  margin-bottom: 40px; /* More space below category select */
+}
+
+.settings-footer {
+  margin-top: 60px; /* Push Light/Dark mode buttons closer to bottom */
+}
+
+.settings-footer button {
+  margin-top: 12px; /* Optional: consistent vertical spacing */
 }
