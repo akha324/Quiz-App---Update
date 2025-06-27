@@ -8,7 +8,7 @@ function sha256(str) {
 function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
-  const agreed = f.querySelector("#agree-terms").checked;
+  const agreed = f.querySelector("#agree-terms")?.checked;
   if (f.password.value !== f.confirm.value || !agreed) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
@@ -20,20 +20,14 @@ function handleSignUp(e) {
       email: f.email.value.trim().toLowerCase(),
       password: hash
     };
-
     const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
     localUsers.push(newUser);
     localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
-    api("/signup", newUser).then(({ message }) => {
-      f.reset();
-      card.querySelector("#signup-ok").textContent = message;
-      card.querySelector("#signup-ok").style.display = "block";
-      card.querySelector("#signup-err").style.display = "none";
-    }).catch(err => {
-      card.querySelector("#signup-err").textContent = `❌ ${err.message}`;
-      card.querySelector("#signup-err").style.display = "block";
-    });
+    f.reset();
+    card.querySelector("#signup-ok").textContent = "✅ Account created!";
+    card.querySelector("#signup-ok").style.display = "block";
+    card.querySelector("#signup-err").style.display = "none";
   });
 }
 
@@ -50,33 +44,29 @@ function buildSignupForm() {
       <button type="submit" class="start">Create Account</button>
     </form>
     <div id="signup-ok" style="display:none;color:#4caf50;margin-top:12px"></div>
-    <div id="signup-err" style="display:none;color:#f44336;margin-top:12px"></div>
+    <div id="signup-err" style="display:none;color:#f44336;margin-top:12px">❌ Passwords do not match or agreement missing.</div>
   `;
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
-  const back = card.querySelector(".back-arrow");
-  if (back) back.onclick = buildWelcome;
 }
 
 function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
   sha256(f.password.value).then(hash => {
-    api("/login", {
-      identifier: f.identifier.value.trim(),
-      password: hash
-    }).then(({ username }) => {
-      const userDisplay = document.getElementById("user-display");
-      if (userDisplay) {
-        userDisplay.textContent = `👤 ${username}`;
-        userDisplay.style.display = "block";
-      }
+    const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+    const user = users.find(u =>
+      (u.username === f.identifier.value.trim() || u.email === f.identifier.value.trim()) && u.password === hash
+    );
+    if (user) {
+      const uDisp = document.getElementById("user-display");
+      uDisp.textContent = `👤 ${user.username}`;
+      uDisp.style.display = "block";
       card.querySelector("#login-ok").style.display = "block";
       card.querySelector("#login-err").style.display = "none";
-      setTimeout(buildWelcome, 1200);
-    }).catch(err => {
-      card.querySelector("#login-err").textContent = `❌ ${err.message}`;
+      setTimeout(showWelcome, 1200);
+    } else {
       card.querySelector("#login-err").style.display = "block";
-    });
+    }
   });
 }
 
@@ -89,95 +79,49 @@ function showResetForm() {
       <button class="start" type="submit">Send Reset Link</button>
     </form>
     <p id="reset-msg" style="display:none;color:#4caf50;margin-top:18px">
-      📧 Password reset email sent.
+      📧 Password reset link sent (simulated).
     </p>`;
-  const back = card.querySelector(".back-arrow");
-  if (back) back.onclick = buildWelcome;
   card.querySelector("#reset-form").onsubmit = e => {
     e.preventDefault();
-    api("/reset-request", { email: e.target.email.value.trim() })
-      .then(() => {
-        e.target.reset();
-        card.querySelector("#reset-msg").style.display = "block";
-      })
-      .catch(err => alert("❌ " + err.message));
+    e.target.reset();
+    card.querySelector("#reset-msg").style.display = "block";
   };
 }
 
 function saveToLeaderboard() {
   const display = document.getElementById("user-display");
   const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
-
   const scoreData = {
     username,
     score,
     total: settings.numQuestions,
     timestamp: new Date().toISOString()
   };
-
-  fetch("/api/score", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(scoreData)
-  })
-    .then(res => {
-      if (!res.ok) return res.json().then(err => { throw new Error(err.error || "Failed to save") });
-      return res.json();
-    })
-    .then(() => alert("✅ Score saved to leaderboard!"))
-    .catch(err => alert("❌ Failed to save score: " + err.message));
+  const localScores = JSON.parse(localStorage.getItem("localScores") || "[]");
+  localScores.push(scoreData);
+  localStorage.setItem("localScores", JSON.stringify(localScores));
+  alert("✅ Score saved to leaderboard!");
 }
 
 function showLeaderboard() {
-  fetch("/api/leaderboard")
-    .then(res => {
-      if (!res.ok) throw new Error("Failed to fetch leaderboard");
-      return res.json();
-    })
-    .then(localScores => {
-      localScores.sort((a, b) => b.score - a.score);
-      const top10 = localScores.slice(0, 10);
-      card.innerHTML = `
-        <button class="back-arrow" onclick="showWelcome()">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <h1 class="title">🏆 Leaderboard</h1>
-        <p class="subtitle">Top 10 Scores</p>
-        <div class="leaderboard-box">
-          <ol class="leaderboard-list">
-            ${top10.map((entry, i) => `
-              <li class="leaderboard-entry">
-                <span class="rank">#${i + 1}</span>
-                <span class="user">${entry.username}</span>
-                <span class="score">${entry.score}/${entry.total}</span>
-                <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-              </li>
-            `).join("")}
-          </ol>
-        </div>`;
-    })
-    .catch(err => {
-      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
-    });
+  const localScores = JSON.parse(localStorage.getItem("localScores") || "[]");
+  localScores.sort((a, b) => b.score - a.score);
+  const top10 = localScores.slice(0, 10);
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">🏆 Leaderboard</h1>
+    <p class="subtitle">Top 10 Scores</p>
+    <div class="leaderboard-box">
+      <ol class="leaderboard-list">
+        ${top10.map((entry, i) => `
+          <li class="leaderboard-entry">
+            <span class="rank">#${i + 1}</span>
+            <span class="user">${entry.username}</span>
+            <span class="score">${entry.score}/${entry.total}</span>
+            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+          </li>`).join("")}
+      </ol>
+    </div>`;
 }
-
-function api(path, data) {
-  if (path === "/signup") {
-    return Promise.resolve({ message: "Account created!" });
-  } else if (path === "/login") {
-    const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
-    const user = users.find(u =>
-      (u.username === data.identifier || u.email === data.identifier) && u.password === data.password
-    );
-    if (user) {
-      return Promise.resolve({ username: user.username });
-    } else {
-      return Promise.reject(new Error("Invalid username/email or password."));
-    }
-  } else if (path === "/reset-request") {
-    return Promise.resolve({ message: "Reset link sent (simulated)." });
-  }
-  return Promise.reject(new Error("Endpoint not supported in static mode."));
-}
-
-window.showLeaderboard = showLeaderboard;
