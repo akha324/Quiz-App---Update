@@ -54,6 +54,17 @@
 
   <!-- overlay & top bar -->
   <div class="overlay" aria-hidden="true"></div>
+<!-- Always-visible Profile Container -->
+<div id="profile-container">
+  <div class="profile-picture">
+    <img id="profile-img" src="https://via.placeholder.com/80" alt="Profile Picture">
+  </div>
+  <div class="profile-info">
+    <p id="profile-username">Not signed in</p>
+    <p class="status">🔴 Offline</p>
+    <a href="#" onclick="logOut()" class="logout-link" style="display:none;">Log Out</a>
+  </div>
+</div>
 
   <!-- username display (initially hidden) -->
 
@@ -362,6 +373,21 @@ function handleLogIn(e) {
   }
 }
 
+function logOut() {
+  const display = document.getElementById("user-display");
+  display.textContent = "";
+  display.style.display = "none";
+
+  // ✅ Clear profile container back to default
+  document.getElementById("profile-username").textContent = "Not signed in";
+  document.getElementById("profile-img").src = "https://via.placeholder.com/80";
+  document.querySelector("#profile-container .status").textContent = "🔴 Offline";
+  document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  localStorage.removeItem("rememberedUser");
+  showWelcome();
+}
+
     /* ---------- RESET PASSWORD ---------- */
     function showResetForm(){
       card.innerHTML=`
@@ -561,14 +587,17 @@ function saveToLeaderboard() {
 <script>
 
   function handleLogIn(e) {
-    e.preventDefault();
-    const f = e.target;
-    const id = f.identifier.value.trim().toLowerCase();
-    const pw = f.password.value;
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
 
+  // If you store hashed passwords, hash input first:
+  // If you store plaintext passwords, remove this.
+  sha256(pw).then(hash => {
     const user = users.find(u =>
       (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-      u.password === pw
+      u.password === hash
     );
 
     const msg = card.querySelector("#login-message");
@@ -578,10 +607,23 @@ function saveToLeaderboard() {
       msg.style.display = "block";
       err.style.display = "none";
 
+      // ✅ Show clickable inline username display
       const uDisp = document.getElementById("user-display");
       uDisp.innerHTML = `<a href="#" onclick="showProfilePage()" style="text-decoration:none;color:inherit;">👤 ${user.username}</a>`;
       uDisp.style.display = "block";
 
+      // ✅ Fill always-visible profile container
+      const profileUsername = document.getElementById("profile-username");
+      const profileImg = document.getElementById("profile-img");
+      const status = document.querySelector("#profile-container .status");
+      const logoutLink = document.querySelector("#profile-container .logout-link");
+
+      profileUsername.textContent = `👤 ${user.username}`;
+      profileImg.src = "https://via.placeholder.com/80";
+      status.textContent = "🟢 Online";
+      logoutLink.style.display = "inline";
+
+      // ✅ Remember user if checked
       if (f.querySelector("#remember-me").checked) {
         localStorage.setItem("rememberedUser", id);
       } else {
@@ -593,54 +635,88 @@ function saveToLeaderboard() {
       msg.style.display = "none";
       err.style.display = "block";
     }
-  }
+  });
+}
 
   function showProfilePage() {
-    const display = document.getElementById("user-display");
-    const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+  const display = document.getElementById("user-display");
+  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
-    card.innerHTML = `
-      <h1 class="title">Profile</h1>
-      <div class="profile-box" style="
-        display: flex;
-        align-items: flex-start;
-        gap: 20px;
-        background: rgba(255, 255, 255, 0.05);
-        padding: 20px;
-        border-radius: 10px;">
-        
-        <div style="
-          border: 4px solid #f8be2e;
-          border-radius: 50%;
-          overflow: hidden;
-          width: 100px;
-          height: 100px;">
-          <img src="https://via.placeholder.com/100" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
-        </div>
-
-        <div style="
-          flex: 1;
-          min-height: 100px;
-          border: 2px dashed rgba(255, 255, 255, 0.2);
-          background: transparent;">
-        </div>
+  card.innerHTML = `
+    <h1 class="title">Profile</h1>
+    <div class="profile-box" style="
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;">
+      
+      <div style="
+        border: 4px solid #f8be2e;
+        border-radius: 50%;
+        overflow: hidden;
+        width: 100px;
+        height: 100px;">
+        <img src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
 
-      <div style="margin-top: 20px; text-align: right;">
-        <p style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
-        <p style="margin: 4px 0; color: #4caf50;">🟢 Online</p>
-        <a href="#" onclick="logOut()" style="color: #ff5252; text-decoration: underline;">Log Out</a>
+      <div style="
+        flex: 1;
+        min-height: 100px;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        background: transparent;">
+        <!-- You can add more profile details here -->
       </div>
-    `;
-  }
+    </div>
 
-  function logOut() {
-    const display = document.getElementById("user-display");
-    display.textContent = "";
-    display.style.display = "none";
-    localStorage.removeItem("rememberedUser");
-    showWelcome();
-  }
+    <div style="margin-top: 20px; text-align: right;">
+      <p style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
+      <p style="margin: 4px 0; color: #4caf50;">🟢 Online</p>
+      <a href="#" onclick="logOut()" style="color: #ff5252; text-decoration: underline;">Log Out</a>
+    </div>
+  `;
+}
+
+  function showProfilePage() {
+  const display = document.getElementById("user-display");
+  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+
+  card.innerHTML = `
+    <h1 class="title">Profile</h1>
+    <div class="profile-box" style="
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 20px;
+      border-radius: 10px;">
+      
+      <div style="
+        border: 4px solid #f8be2e;
+        border-radius: 50%;
+        overflow: hidden;
+        width: 100px;
+        height: 100px;">
+        <img src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+
+      <div style="
+        flex: 1;
+        min-height: 100px;
+        border: 2px dashed rgba(255, 255, 255, 0.2);
+        background: transparent;">
+        <!-- You can add more profile details here -->
+      </div>
+    </div>
+
+    <div style="margin-top: 20px; text-align: right;">
+      <p style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
+      <p style="margin: 4px 0; color: #4caf50;">🟢 Online</p>
+      <a href="#" onclick="logOut()" style="color: #ff5252; text-decoration: underline;">Log Out</a>
+    </div>
+  `;
+}
 
   window.showProfilePage = showProfilePage;
   window.logOut = logOut;
