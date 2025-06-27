@@ -590,50 +590,29 @@ function saveToLeaderboard() {
   e.preventDefault();
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
-  const pw = f.password.value;
 
-  // If you store hashed passwords, hash input first:
-  // If you store plaintext passwords, remove this.
-  sha256(pw).then(hash => {
+  sha256(f.password.value).then(hash => {
+    const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
     const user = users.find(u =>
       (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
       u.password === hash
     );
 
     const msg = card.querySelector("#login-message");
-    const err = card.querySelector("#login-error");
+    const err = card.querySelector("#login-err");
 
     if (user) {
-      msg.style.display = "block";
-      err.style.display = "none";
-
-      // ✅ Show clickable inline username display
       const uDisp = document.getElementById("user-display");
-      uDisp.innerHTML = `<a href="#" onclick="showProfilePage()" style="text-decoration:none;color:inherit;">👤 ${user.username}</a>`;
+      uDisp.textContent = `👤 ${user.username}`;
       uDisp.style.display = "block";
 
-      // ✅ Fill always-visible profile container
-      const profileUsername = document.getElementById("profile-username");
-      const profileImg = document.getElementById("profile-img");
-      const status = document.querySelector("#profile-container .status");
-      const logoutLink = document.querySelector("#profile-container .logout-link");
-
-      profileUsername.textContent = `👤 ${user.username}`;
-      profileImg.src = "https://via.placeholder.com/80";
-      status.textContent = "🟢 Online";
-      logoutLink.style.display = "inline";
-
-      // ✅ Remember user if checked
-      if (f.querySelector("#remember-me").checked) {
-        localStorage.setItem("rememberedUser", id);
-      } else {
-        localStorage.removeItem("rememberedUser");
-      }
+      if (msg) msg.style.display = "block";
+      if (err) err.style.display = "none";
 
       setTimeout(showWelcome, 1200);
     } else {
-      msg.style.display = "none";
-      err.style.display = "block";
+      if (msg) msg.style.display = "none";
+      if (err) err.style.display = "block";
     }
   });
 }
