@@ -53,22 +53,29 @@ function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
+
   sha256(f.password.value).then(hash => {
     const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
     const user = users.find(u =>
       (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
       u.password === hash
     );
+
+    const msg = card.querySelector("#login-message");
+    const err = card.querySelector("#login-err");
+
     if (user) {
       const uDisp = document.getElementById("user-display");
       uDisp.textContent = `👤 ${user.username}`;
       uDisp.style.display = "block";
-      card.querySelector("#login-message").style.display = "block";
-      card.querySelector("#login-err").style.display = "none";
+
+      if (msg) msg.style.display = "block";
+      if (err) err.style.display = "none";
+
       setTimeout(showWelcome, 1200);
     } else {
-      card.querySelector("#login-message").style.display = "none";
-      card.querySelector("#login-err").style.display = "block";
+      if (msg) msg.style.display = "none";
+      if (err) err.style.display = "block";
     }
   });
 }
@@ -127,4 +134,19 @@ function showLeaderboard() {
           </li>`).join("")}
       </ol>
     </div>`;
+}
+
+function buildLoginForm() {
+  card.innerHTML = `
+    ${backBtn()}
+    <h1 class="title">Log In</h1>
+    <form id="login-form" class="signup-form">
+      <input name="identifier" placeholder="Username or Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <button type="submit" class="start">Log In</button>
+    </form>
+    <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Logged in successfully!</div>
+    <div id="login-err" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
+  `;
+  card.querySelector("#login-form").addEventListener("submit", handleLogIn);
 }
