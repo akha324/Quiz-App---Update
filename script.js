@@ -1,8 +1,9 @@
-function sha256(str) {
+async function sha256(str) {
   const buf = new TextEncoder().encode(str);
-  return crypto.subtle.digest("SHA-256", buf).then(hash => {
-    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, "0")).join("");
-  });
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function handleSignUp(e) {
@@ -49,35 +50,45 @@ function buildSignupForm() {
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
-function handleLogIn(e) {
+async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
 
-  sha256(f.password.value).then(hash => {
-    const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
-    const user = users.find(u =>
-      (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-      u.password === hash
-    );
+  // ✅ If you use hashing, hash the input password
+  const hash = await sha256(pw);
 
-    const msg = card.querySelector("#login-message");
-    const err = card.querySelector("#login-err");
+  // ✅ Always read from localStorage!
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
-    if (user) {
-      const uDisp = document.getElementById("user-display");
-      uDisp.textContent = `👤 ${user.username}`;
-      uDisp.style.display = "block";
+  const user = users.find(u =>
+    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
+    u.password === hash  // compare hashed version
+  );
 
-      if (msg) msg.style.display = "block";
-      if (err) err.style.display = "none";
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
 
-      setTimeout(showWelcome, 1200);
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
+
+    if (f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
     } else {
-      if (msg) msg.style.display = "none";
-      if (err) err.style.display = "block";
+      localStorage.removeItem("rememberedUser");
     }
-  });
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
 }
 
 function showResetForm() {
