@@ -662,7 +662,7 @@ function saveToLeaderboard() {
   </script>
 </body>
   
-  <script>
+<script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -728,11 +728,12 @@ async function handleLogIn(e) {
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    // ✅ Set avatar based on dark mode
+    // ✅ Correct dark/light avatar switch
+    const profileImg = document.getElementById("profile-img");
     if (document.body.classList.contains("dark")) {
-      document.getElementById("profile-img").src = "default-avatar.white.png";
+      profileImg.src = "default-avatar.white.png";
     } else {
-      document.getElementById("profile-img").src = "default-avatar.png";
+      profileImg.src = "default-avatar.png";
     }
 
     const display = document.getElementById("user-display");
@@ -757,11 +758,12 @@ async function handleLogIn(e) {
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
 
-  // ✅ Set avatar based on dark mode
+  // ✅ Correct dark/light avatar switch
+  const profileImg = document.getElementById("profile-img");
   if (document.body.classList.contains("dark")) {
-    document.getElementById("profile-img").src = "default-avatar.white.png";
+    profileImg.src = "default-avatar.white.png";
   } else {
-    document.getElementById("profile-img").src = "default-avatar.png";
+    profileImg.src = "default-avatar.png";
   }
 
   const status = document.querySelector("#profile-container .status");
