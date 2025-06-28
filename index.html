@@ -661,8 +661,7 @@ function saveToLeaderboard() {
 
   </script>
 </body>
-  
-<script>
+  <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -731,9 +730,9 @@ async function handleLogIn(e) {
     // ✅ Correct dark/light avatar switch
     const profileImg = document.getElementById("profile-img");
     if (document.body.classList.contains("dark")) {
-      profileImg.src = "default-avatar-white.png";  // ✅ dark mode avatar
+      profileImg.src = "default-avatar-white.png";
     } else {
-      profileImg.src = "default-avatar.png";        // ✅ light mode avatar
+      profileImg.src = "default-avatar.png";
     }
 
     const display = document.getElementById("user-display");
@@ -761,9 +760,9 @@ function logOut() {
   // ✅ Correct dark/light avatar switch
   const profileImg = document.getElementById("profile-img");
   if (document.body.classList.contains("dark")) {
-    profileImg.src = "default-avatar-white.png";  // ✅ dark mode avatar
+    profileImg.src = "default-avatar-white.png";
   } else {
-    profileImg.src = "default-avatar.png";        // ✅ light mode avatar
+    profileImg.src = "default-avatar.png";
   }
 
   const status = document.querySelector("#profile-container .status");
@@ -787,6 +786,22 @@ function logOut() {
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
+
+/* ---------- INITIAL WELCOME + AVATAR ON LOAD ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Always show welcome box
+  showWelcome();
+
+  // ✅ Ensure correct avatar on page load
+  const profileImg = document.getElementById("profile-img");
+  if (profileImg) {
+    if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
+    } else {
+      profileImg.src = "default-avatar.png";
+    }
+  }
+});
 </script>
 
 </body>
