@@ -764,7 +764,7 @@ function logOut() {
     profileImg.src = "default-avatar.png";
   } 
     
-  else if (document.body.classList.contains("dark")){
+  if (document.body.classList.contains("dark")){
     profileImg.src = "default-avatar-white.png";
   }
 
@@ -797,6 +797,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ Ensure correct avatar on page load
   const profileImg = document.getElementById("profile-img");
+  
   if (profileImg) {
     if (document.body.classList.contains("light")) {
       profileImg.src = "default-avatar.png";
