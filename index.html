@@ -620,7 +620,7 @@ function saveToLeaderboard() {
   </script>
 </body>
 <script>
-
+/* ------------------- OVERRIDDEN CODE -----------------------*/
   async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -764,14 +764,22 @@ async function handleLogIn(e) {
     msg.style.display = "block";
     err.style.display = "none";
 
-    const display = document.getElementById("user-display");
-    display.textContent = `👤 ${user.username}`;
-    display.style.display = "block";
+    // ✅ REMOVED blue box display
+    // const display = document.getElementById("user-display");
+    // display.textContent = 👤 ${user.username};
+    // display.style.display = "block";
 
     // ✅ Update profile container
     document.getElementById("profile-username").textContent = user.username;
-    document.querySelector("#profile-container .status").textContent = "🟢 Online";
+
+    const status = document.querySelector("#profile-container .status");
+    status.textContent = "🟢 Online";
+    status.style.color = "green"; // ✅ Always green in light & dark mode
+
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
+
+    // ✅ Update profile picture if needed
+    document.getElementById("profile-img").src = "default-avatar.png";
 
     if (f.querySelector("#remember-me").checked) {
       localStorage.setItem("rememberedUser", id);
@@ -788,13 +796,16 @@ async function handleLogIn(e) {
 
 /* ---------- LOG-OUT HANDLER ---------- */
 function logOut() {
-  const display = document.getElementById("user-display");
-  display.textContent = "";
-  display.style.display = "none";
+  // ✅ REMOVED blue box reset
+  // const display = document.getElementById("user-display");
+  // display.textContent = "";
+  // display.style.display = "none";
 
   document.getElementById("profile-username").textContent = "Not signed in";
   document.getElementById("profile-img").src = "default-avatar.png"; // default avatar
-  document.querySelector("#profile-container .status").textContent = "🔴 Offline";
+  const status = document.querySelector("#profile-container .status");
+  status.textContent = "🔴 Offline";
+  status.style.color = "red";
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
   localStorage.removeItem("rememberedUser");
@@ -806,6 +817,7 @@ window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
 </script>
+
 
 </body>
 
