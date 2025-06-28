@@ -810,27 +810,15 @@ function showProfilePage() {
     <h1 class="title">Profile</h1>
 
     <div class="tabs" style="text-align:center;margin-bottom:20px;">
-      <button onclick="showTab('profile-info')" class="tab-btn active"
-        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
-        Profile Info
-      </button>
-      <button onclick="showTab('play-history')" class="tab-btn"
-        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
-        Play History
-      </button>
-      <button onclick="showTab('avatar-change')" class="tab-btn"
-        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
-        Change Avatar
-      </button>
+      <button onclick="showTab('profile-info')" class="tab-btn start active">Profile Info</button>
+      <button onclick="showTab('play-history')" class="tab-btn start">Play History</button>
+      <button onclick="showTab('avatar-change')" class="tab-btn start">Change Avatar</button>
     </div>
 
     <div id="profile-info" class="tab-content" style="display:block; text-align:center;">
       <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
       <h2 style="margin:12px 0;">${username}</h2>
-      <button class="start" onclick="logOut()" 
-        style="margin-top:20px;padding:10px 20px;background:#03a9f4;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-weight:bold;transition:0.3s;">
-        Log Out
-      </button>
+      <button class="btn-home" onclick="logOut()" style="margin-top:20px;">Log Out</button>
     </div>
 
     <div id="play-history" class="tab-content" style="display:none;">
@@ -851,22 +839,41 @@ function showProfilePage() {
     </div>
 
     <style>
-      .tabs .tab-btn {
+      .tab-btn.start {
         background: #f8be2e;
         color: #000;
+        font-family: inherit;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
       }
-      .tabs .tab-btn:hover {
+      .tab-btn.start:hover {
         background: #ffc107 !important;
       }
-      .tabs .tab-btn.active {
+      .tab-btn.start.active {
         background: #ffc107 !important;
+      }
+      .btn-home {
+        background: #03a9f4;
+        color: #fff;
+        font-family: inherit;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      .btn-home:hover {
+        background: #0288d1 !important;
       }
       .tab-content img:hover {
         border-color: #f8be2e !important;
         transform: scale(1.05);
-      }
-      .start:hover {
-        background: #0288d1 !important;
       }
     </style>
   `;
@@ -880,16 +887,10 @@ function selectProfileImage(src) {
 
 function showTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
-  document.querySelectorAll(".tab-btn").forEach(el => {
-    el.classList.remove("active");
-    el.style.background = "#f8be2e";
-    el.style.color = "#000";
-  });
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
   document.getElementById(tabId).style.display = "block";
   const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
-  const activeBtn = document.querySelectorAll(".tab-btn")[index];
-  activeBtn.classList.add("active");
-  activeBtn.style.background = "#ffc107";
+  document.querySelectorAll(".tab-btn")[index].classList.add("active");
 }
 
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
