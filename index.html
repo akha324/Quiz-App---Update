@@ -661,8 +661,7 @@ function saveToLeaderboard() {
 
   </script>
 </body>
-  
-<script>
+  <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -763,7 +762,7 @@ function logOut() {
   if (document.body.classList.contains("light")) {
     profileImg.src = "default-avatar.png";
   } 
-    
+  
   if (document.body.classList.contains("dark")){
     profileImg.src = "default-avatar-white.png";
   }
@@ -784,6 +783,52 @@ function logOut() {
 
   showWelcome();
 }
+
+/* ---------- PROFILE PAGE ---------- */
+function showProfilePage() {
+  const username = document.getElementById("profile-username").textContent || "Not signed in";
+  const avatar = document.getElementById("profile-img").src;
+
+  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
+    .filter(s => s.username === username)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const historyList = scores.length > 0
+    ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
+    : "<p>No play history yet.</p>";
+
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">Profile</h1>
+    <div class="profile-box" style="text-align:center;">
+      <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
+      <h2 style="margin:12px 0;">${username}</h2>
+      <label style="display:block;margin:20px 0;">
+        <span style="display:block;margin-bottom:6px;">Change Profile Picture:</span>
+        <input type="file" accept="image/*" onchange="updateProfileImage(event)" />
+      </label>
+      <h3>Play History</h3>
+      ${historyList}
+      <button class="start" onclick="logOut()" style="margin-top:20px;">Log Out</button>
+    </div>
+  `;
+}
+
+function updateProfileImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const profileImg = document.getElementById("profile-img");
+    profileImg.src = evt.target.result;
+    showProfilePage();
+  };
+  reader.readAsDataURL(file);
+}
+
+document.getElementById("profile-img").onclick = showProfilePage;
 
 /* ---------- EXPORT TO GLOBAL ---------- */
 window.handleSignUp = handleSignUp;
@@ -808,5 +853,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
+
 </body>
 </html>
