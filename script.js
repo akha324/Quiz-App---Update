@@ -179,3 +179,33 @@ function logOut() {
   localStorage.removeItem("rememberedUser");
   showWelcome();
 }
+
+// ✅ Save score locally and to MongoDB
+async function saveScore(username, score) {
+  // Save locally
+  const localScores = JSON.parse(localStorage.getItem("localScores") || "[]");
+  localScores.push({
+    username,
+    score,
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem("localScores", JSON.stringify(localScores));
+
+  // Save to server (MongoDB)
+  try {
+    const res = await fetch("/api/score", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        score,
+        timestamp: new Date().toISOString()
+      })
+    });
+    if (!res.ok) {
+      throw new Error("Server error saving score");
+    }
+  } catch (err) {
+    console.warn("Could not save score to server:", err);
+  }
+}
