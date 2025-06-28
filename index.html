@@ -809,7 +809,7 @@ function showProfilePage() {
     </button>
     <h1 class="title">Profile</h1>
 
-    <div class="tabs" style="text-align:center;margin-bottom:20px;">
+    <div class="tabs" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <button onclick="showTab('profile-info')" class="tab-btn start active">Profile Info</button>
       <button onclick="showTab('play-history')" class="tab-btn start">Play History</button>
       <button onclick="showTab('avatar-change')" class="tab-btn start">Change Avatar</button>
@@ -847,10 +847,9 @@ function showProfilePage() {
         font-weight: bold;
         border: none;
         padding: 10px 20px;
-        margin: 0 8px;
         border-radius: 5px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.3s ease;
       }
       .tab-btn.start:hover {
         background: #ffc107 !important;
@@ -867,7 +866,7 @@ function showProfilePage() {
         padding: 10px 20px;
         border-radius: 5px;
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: background 0.3s ease;
       }
       .btn-home:hover {
         background: #0288d1 !important;
