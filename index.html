@@ -763,7 +763,8 @@ function logOut() {
   if (document.body.classList.contains("light")) {
     profileImg.src = "default-avatar.png";
   } 
-  else {
+    
+  else if (document.body.classList.contains("dark")){
     profileImg.src = "default-avatar-white.png";
   }
 
@@ -806,6 +807,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-
 </body>
 </html>
