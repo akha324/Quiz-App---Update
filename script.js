@@ -6,6 +6,24 @@ async function sha256(str) {
     .join("");
 }
 
+function buildSignupForm() {
+  card.innerHTML = `
+    ${backBtn()}
+    <h1 class="title">Create Account</h1>
+    <form id="signup-form" class="signup-form">
+      <input name="username" placeholder="Username" required />
+      <input name="email" type="email" placeholder="Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <input name="confirm" type="password" placeholder="Confirm Password" required />
+      <label><input type="checkbox" id="agree-terms" required /> I agree to the terms</label>
+      <button type="submit" class="start">Create Account</button>
+    </form>
+    <div id="signup-ok" style="display:none;color:#4caf50;margin-top:12px"></div>
+    <div id="signup-err" style="display:none;color:#f44336;margin-top:12px">❌ Passwords do not match or agreement missing.</div>
+  `;
+  card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
+}
+
 function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
@@ -30,65 +48,6 @@ function handleSignUp(e) {
     card.querySelector("#signup-ok").style.display = "block";
     card.querySelector("#signup-err").style.display = "none";
   });
-}
-
-function buildSignupForm() {
-  card.innerHTML = `
-    ${backBtn()}
-    <h1 class="title">Create Account</h1>
-    <form id="signup-form" class="signup-form">
-      <input name="username" placeholder="Username" required />
-      <input name="email" type="email" placeholder="Email" required />
-      <input name="password" type="password" placeholder="Password" required />
-      <input name="confirm" type="password" placeholder="Confirm Password" required />
-      <label><input type="checkbox" id="agree-terms" required /> I agree to the terms</label>
-      <button type="submit" class="start">Create Account</button>
-    </form>
-    <div id="signup-ok" style="display:none;color:#4caf50;margin-top:12px"></div>
-    <div id="signup-err" style="display:none;color:#f44336;margin-top:12px">❌ Passwords do not match or agreement missing.</div>
-  `;
-  card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
-}
-
-async function handleLogIn(e) {
-  e.preventDefault();
-  const f = e.target;
-  const id = f.identifier.value.trim().toLowerCase();
-  const pw = f.password.value;
-
-  // Hash the input password
-  const hash = await sha256(pw);
-
-  // ✅ Always read from localStorage!
-  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-
-  const user = localUsers.find(u =>
-    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-    u.password === hash
-  );
-
-  const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error");
-
-  if (user) {
-    msg.style.display = "block";
-    err.style.display = "none";
-
-    const uDisp = document.getElementById("user-display");
-    uDisp.textContent = `👤 ${user.username}`;
-    uDisp.style.display = "block";
-
-    if (f.querySelector("#remember-me").checked) {
-      localStorage.setItem("rememberedUser", id);
-    } else {
-      localStorage.removeItem("rememberedUser");
-    }
-
-    setTimeout(showWelcome, 1200);
-  } else {
-    msg.style.display = "none";
-    err.style.display = "block";
-  }
 }
 
 function showResetForm() {
