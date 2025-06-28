@@ -498,3 +498,11 @@ body:not(.dark) #profile-container .logout-link {
 body:not(.dark) #profile-container .status {
   color: red !important;
 }
+
+body:not(.dark) #profile-container .status.online {
+  color: green;
+}
+
+#profile-container .status.offline {
+  color: red;
+}
