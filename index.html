@@ -661,8 +661,7 @@ function saveToLeaderboard() {
 
   </script>
 </body>
-  
-<script>
+  <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -760,7 +759,7 @@ function logOut() {
   const profileImg = document.getElementById("profile-img");
   if (document.body.classList.contains("light")) {
     profileImg.src = "default-avatar.png";
-  } 
+  }
   if (document.body.classList.contains("dark")) {
     profileImg.src = "default-avatar-white.png";
   }
@@ -788,14 +787,13 @@ function showProfilePage() {
   const avatar = document.getElementById("profile-img").src;
 
   const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
-    .filter(s => s.username === username)
+    .filter(s => username === "Not signed in" || s.username === username)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   const historyList = scores.length > 0
     ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
     : "<p>No play history yet.</p>";
 
-  // 40 random avatars
   const avatarOptions = Array.from({ length: 40 }, (_, i) => `
     <img src="avatars/avatar${i + 1}.png" 
          onclick="selectProfileImage('avatars/avatar${i + 1}.png')" 
@@ -839,53 +837,53 @@ function showProfilePage() {
     </div>
 
     <style>
-  .tabs {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .tab-btn.start {
-    display: inline-block;
-    background: #f8be2e;
-    color: #000;
-    font-family: inherit;
-    font-weight: bold;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .tab-btn.start:hover {
-    background: #ffd54f; /* same as other buttons */
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-  }
-  .tab-btn.start.active {
-    background: #ffc107 !important;
-  }
-  .btn-home {
-    background: #03a9f4;
-    color: #fff;
-    font-family: inherit;
-    font-weight: bold;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  .btn-home:hover {
-    background: #0288d1 !important;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-  }
-  .tab-content img:hover {
-    border-color: #f8be2e !important;
-    transform: scale(1.05);
-  }
-</style>
+    .tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .tab-btn.start {
+      display: inline-block;
+      background: #f8be2e;
+      color: #000;
+      font-family: inherit;
+      font-weight: bold;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .tab-btn.start:hover {
+      background: #ffd54f;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .tab-btn.start.active {
+      background: #ffc107 !important;
+    }
+    .btn-home {
+      background: #03a9f4;
+      color: #fff;
+      font-family: inherit;
+      font-weight: bold;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-home:hover {
+      background: #0288d1 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+    }
+    .tab-content img:hover {
+      border-color: #f8be2e !important;
+      transform: scale(1.05);
+    }
+    </style>
   `;
 }
 
@@ -914,13 +912,11 @@ window.logOut = logOut;
 /* ---------- INITIAL WELCOME + AVATAR ON LOAD ---------- */
 document.addEventListener("DOMContentLoaded", () => {
   showWelcome();
-
   const profileImg = document.getElementById("profile-img");
   if (profileImg) {
     if (document.body.classList.contains("light")) {
       profileImg.src = "default-avatar.png";
-    } 
-    else if (document.body.classList.contains("dark")) {
+    } else if (document.body.classList.contains("dark")) {
       profileImg.src = "default-avatar-white.png";
     }
   }
