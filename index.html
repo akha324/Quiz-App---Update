@@ -657,7 +657,7 @@ function handleSignUp(e) {
   card.querySelector("#signup-err").style.display = "none";
 }
 
-  function showProfilePage() {
+function showProfilePage() {
   const display = document.getElementById("user-display");
   const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
@@ -677,7 +677,7 @@ function handleSignUp(e) {
         overflow: hidden;
         width: 100px;
         height: 100px;">
-        <img src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
+        <img id="profile-img" src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
 
       <div style="
@@ -686,13 +686,10 @@ function handleSignUp(e) {
         border: 2px dashed rgba(255, 255, 255, 0.2);
         background: transparent;">
         <!-- More profile details here -->
+        <p id="profile-username" style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
+        <p id="profile-status" class="status" style="margin: 4px 0;">🔴 Offline</p>
+        <a href="#" class="logout-link" onclick="logOut()" style="display: none; color: #ff5252; text-decoration: underline;">Log Out</a>
       </div>
-    </div>
-
-    <div style="margin-top: 20px; text-align: right;">
-      <p style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
-      <p class="status" style="margin: 4px 0;">🔴 Offline</p>
-      <a href="#" onclick="logOut()" style="color: #ff5252; text-decoration: underline;">Log Out</a>
     </div>
   `;
 }
