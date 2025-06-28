@@ -7,6 +7,13 @@ async function sha256(str) {
     .join("");
 }
 
+// ✅ Utility: pick avatar for light or dark mode
+function getDefaultAvatar() {
+  return document.body.classList.contains("dark")
+    ? "default-avatar-white.png"
+    : "default-avatar.png";
+}
+
 // ✅ Seeding static users if needed (optional for first-time demo)
 if (!localStorage.getItem("localUsers")) {
   localStorage.setItem("localUsers", JSON.stringify([
@@ -95,6 +102,18 @@ async function handleLogIn(e) {
     uDisp.textContent = `👤 ${user.username}`;
     uDisp.style.display = "block";
 
+    // ✅ Add: status and avatar update
+    const status = document.getElementById("profile-status");
+    if (status) {
+      status.textContent = "🟢 Online";
+      status.style.color = "green"; // always green
+    }
+
+    const profileImg = document.getElementById("profile-img");
+    if (profileImg) {
+      profileImg.src = getDefaultAvatar();
+    }
+
     if (f.querySelector("#remember-me")?.checked) {
       localStorage.setItem("rememberedUser", id);
     } else {
@@ -142,4 +161,21 @@ function buildLoginForm() {
     <div id="login-err" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
   `;
   card.querySelector("#login-form").addEventListener("submit", handleLogIn);
+}
+
+// ✅ Log Out handler for status + avatar too
+function logOut() {
+  const status = document.getElementById("profile-status");
+  if (status) {
+    status.textContent = "🔴 Offline";
+    status.style.color = "red"; // always red
+  }
+
+  const profileImg = document.getElementById("profile-img");
+  if (profileImg) {
+    profileImg.src = getDefaultAvatar();
+  }
+
+  localStorage.removeItem("rememberedUser");
+  showWelcome();
 }
