@@ -661,7 +661,7 @@ function saveToLeaderboard() {
 
   </script>
 </body>
-<script>
+  
 <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
@@ -675,6 +675,7 @@ async function sha256(str) {
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
+
   if (f.password.value !== f.confirm.value) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
@@ -722,20 +723,19 @@ async function handleLogIn(e) {
 
     const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
-    status.classList.add("online"); // ✅ Add .online class for light mode green
-    status.style.color = "green";   // ✅ Fallback for dark mode
+    status.classList.add("online");
+    status.style.color = "green";
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
     document.getElementById("profile-img").src = "default-avatar.png";
 
-    // ✅ Hide top-left blue box if it exists
     const display = document.getElementById("user-display");
     if (display) {
       display.style.display = "none";
     }
 
-    if (f.querySelector("#remember-me").checked) {
+    if (f.querySelector("#remember-me") && f.querySelector("#remember-me").checked) {
       localStorage.setItem("rememberedUser", id);
     } else {
       localStorage.removeItem("rememberedUser");
@@ -755,14 +755,13 @@ function logOut() {
 
   const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-  status.classList.remove("online"); // ✅ Remove .online class
-  status.style.color = "red";        // ✅ Always red for offline
+  status.classList.remove("online");
+  status.style.color = "red";
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
   localStorage.removeItem("rememberedUser");
 
-  // ✅ Hide top-left blue box if it exists
   const display = document.getElementById("user-display");
   if (display) {
     display.style.display = "none";
@@ -775,7 +774,7 @@ function logOut() {
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
-
 </script>
+
 </body>
 </html>
