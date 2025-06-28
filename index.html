@@ -620,6 +620,7 @@ function saveToLeaderboard() {
   </script>
 </body>
 <script>
+  
 /* ------------------- OVERRIDDEN CODE -----------------------*/
   async function sha256(str) {
   const buf = new TextEncoder().encode(str);
@@ -706,9 +707,10 @@ function handleSignUp(e) {
   window.startQuiz = startQuiz;
   window.saveToLeaderboard = saveToLeaderboard;
   window.showLeaderboard = showLeaderboard;
-</script><script>
-
+</script>
+  
 /* ---------- BASIC HASH FUNCTION ---------- */
+<script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -770,12 +772,8 @@ async function handleLogIn(e) {
     const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
 
-    // ✅ Make "Online" green only in light mode
-    if (document.body.classList.contains("dark")) {
-      status.style.color = "";
-    } else {
-      status.style.color = "green";
-    }
+    // ✅ Always green for Online
+    status.style.color = "green";
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
@@ -801,7 +799,10 @@ function logOut() {
   document.getElementById("profile-img").src = "default-avatar.png"; // default avatar
   const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-  status.style.color = "red"; // ✅ Always red for offline
+
+  // ✅ Always red for Offline
+  status.style.color = "red";
+
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
   localStorage.removeItem("rememberedUser");
@@ -812,7 +813,6 @@ function logOut() {
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
-
 </script>
 </body>
 </html>
