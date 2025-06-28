@@ -839,43 +839,53 @@ function showProfilePage() {
     </div>
 
     <style>
-      .tab-btn.start {
-        display: inline-block;
-        background: #f8be2e;
-        color: #000;
-        font-family: inherit;
-        font-weight: bold;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-      }
-      .tab-btn.start:hover {
-        background: #ffc107 !important;
-      }
-      .tab-btn.start.active {
-        background: #ffc107 !important;
-      }
-      .btn-home {
-        background: #03a9f4;
-        color: #fff;
-        font-family: inherit;
-        font-weight: bold;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s ease;
-      }
-      .btn-home:hover {
-        background: #0288d1 !important;
-      }
-      .tab-content img:hover {
-        border-color: #f8be2e !important;
-        transform: scale(1.05);
-      }
-    </style>
+  .tabs {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .tab-btn.start {
+    display: inline-block;
+    background: #f8be2e;
+    color: #000;
+    font-family: inherit;
+    font-weight: bold;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .tab-btn.start:hover {
+    background: #ffd54f; /* same as other buttons */
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  }
+  .tab-btn.start.active {
+    background: #ffc107 !important;
+  }
+  .btn-home {
+    background: #03a9f4;
+    color: #fff;
+    font-family: inherit;
+    font-weight: bold;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .btn-home:hover {
+    background: #0288d1 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+  }
+  .tab-content img:hover {
+    border-color: #f8be2e !important;
+    transform: scale(1.05);
+  }
+</style>
   `;
 }
 
