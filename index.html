@@ -806,13 +806,16 @@ async function handleLogIn(e) {
 
     document.getElementById("profile-username").textContent = user.username;
 
-    const status = document.querySelector("#profile-container .status");
+    const status = document.getElementById("profile-status");
     status.textContent = "🟢 Online";
-    status.style.color = "green"; // ✅ always green
+    status.style.color = "green"; // always green
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    document.getElementById("profile-img").src = "default-avatar.png";
+    document.getElementById("profile-img").src =
+      document.body.classList.contains("dark")
+        ? "default-avatar-white.png"
+        : "default-avatar.png";
 
     if (f.querySelector("#remember-me").checked) {
       localStorage.setItem("rememberedUser", id);
@@ -830,11 +833,14 @@ async function handleLogIn(e) {
 /* ---------- LOG-OUT HANDLER ---------- */
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
-  document.getElementById("profile-img").src = "default-avatar.png";
+  document.getElementById("profile-img").src =
+    document.body.classList.contains("dark")
+      ? "default-avatar-white.png"
+      : "default-avatar.png";
 
-  const status = document.querySelector("#profile-container .status");
+  const status = document.getElementById("profile-status");
   status.textContent = "🔴 Offline";
-  status.style.color = "red"; // ✅ always red
+  status.style.color = "red"; // always red
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
