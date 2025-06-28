@@ -811,15 +811,15 @@ function showProfilePage() {
 
     <div class="tabs" style="text-align:center;margin-bottom:20px;">
       <button onclick="showTab('profile-info')" class="tab-btn active"
-        style="background:#f8be2e;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.2s;">
+        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
         Profile Info
       </button>
       <button onclick="showTab('play-history')" class="tab-btn"
-        style="background:#555;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;color:#fff;transition:0.2s;">
+        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
         Play History
       </button>
       <button onclick="showTab('avatar-change')" class="tab-btn"
-        style="background:#555;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;color:#fff;transition:0.2s;">
+        style="background:#f8be2e;font-family:inherit;font-weight:bold;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.3s;">
         Change Avatar
       </button>
     </div>
@@ -828,7 +828,7 @@ function showProfilePage() {
       <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
       <h2 style="margin:12px 0;">${username}</h2>
       <button class="start" onclick="logOut()" 
-        style="margin-top:20px;padding:10px 20px;background:#f44336;color:#fff;border:none;border-radius:5px;cursor:pointer;">
+        style="margin-top:20px;padding:10px 20px;background:#03a9f4;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:inherit;font-weight:bold;transition:0.3s;">
         Log Out
       </button>
     </div>
@@ -851,17 +851,22 @@ function showProfilePage() {
     </div>
 
     <style>
+      .tabs .tab-btn {
+        background: #f8be2e;
+        color: #000;
+      }
       .tabs .tab-btn:hover {
-        background: #f8be2e !important;
-        color: #000 !important;
+        background: #ffc107 !important;
       }
       .tabs .tab-btn.active {
-        background: #f8be2e !important;
-        color: #000 !important;
+        background: #ffc107 !important;
       }
       .tab-content img:hover {
         border-color: #f8be2e !important;
         transform: scale(1.05);
+      }
+      .start:hover {
+        background: #0288d1 !important;
       }
     </style>
   `;
@@ -877,15 +882,14 @@ function showTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
   document.querySelectorAll(".tab-btn").forEach(el => {
     el.classList.remove("active");
-    el.style.background = "#555";
-    el.style.color = "#fff";
+    el.style.background = "#f8be2e";
+    el.style.color = "#000";
   });
   document.getElementById(tabId).style.display = "block";
   const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
   const activeBtn = document.querySelectorAll(".tab-btn")[index];
   activeBtn.classList.add("active");
-  activeBtn.style.background = "#f8be2e";
-  activeBtn.style.color = "#000";
+  activeBtn.style.background = "#ffc107";
 }
 
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
