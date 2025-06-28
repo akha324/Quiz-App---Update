@@ -52,7 +52,6 @@ async function handleSignUp(e) {
   card.querySelector("#signup-err").style.display = "none";
 }
 
-// ✅ Handle Log In
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -61,10 +60,6 @@ async function handleLogIn(e) {
 
   const hash = await sha256(pw);
   const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
-
-  console.log("🔍 ID:", id);
-  console.log("🔍 Hash:", hash);
-  console.log("🔍 Users:", users);
 
   const user = users.find(u =>
     (u.username === id || u.email === id) && u.password === hash
