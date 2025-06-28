@@ -292,21 +292,35 @@ function startQuiz() {
     }
     window.showSignUpForm = showSignUpForm;
 
-    function handleSignUp(e){
-      e.preventDefault();
-      const f=e.target;
-      if(f.password.value!==f.confirm.value){
-        card.querySelector("#signup-err").style.display="block";
-        card.querySelector("#signup-ok").style.display="none";
-        return;
-      }
-      users.push({username:f.username.value.trim().toLowerCase(),
-                  email:f.email.value.trim().toLowerCase(),
-                  password:f.password.value});
-      f.reset();
-      card.querySelector("#signup-ok").style.display="block";
-      card.querySelector("#signup-err").style.display="none";
-    }
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+  if (f.password.value !== f.confirm.value) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  // ✅ Hash the password
+  const hash = await sha256(f.password.value);
+
+  // ✅ Get existing users
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  // ✅ Add the new user
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  });
+
+  // ✅ Save back to localStorage
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  f.reset();
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
 
     /* ---------- LOG-IN ---------- */
 function showLogInForm() {
