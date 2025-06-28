@@ -506,3 +506,11 @@ body:not(.dark) #profile-container .status.online {
 #profile-container .status.offline {
   color: red;
 }
+
+.status.online {
+  color: green;
+}
+
+.status.offline {
+  color: red;
+}
