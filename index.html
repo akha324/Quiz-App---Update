@@ -662,7 +662,7 @@ function saveToLeaderboard() {
   </script>
 </body>
   
-<script>
+  <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -730,7 +730,7 @@ async function handleLogIn(e) {
 
     // ✅ Set avatar based on dark mode
     if (document.body.classList.contains("dark")) {
-      document.getElementById("profile-img").src = "default-avatar-white.png";
+      document.getElementById("profile-img").src = "default-avatar.white.png";
     } else {
       document.getElementById("profile-img").src = "default-avatar.png";
     }
@@ -759,7 +759,7 @@ function logOut() {
 
   // ✅ Set avatar based on dark mode
   if (document.body.classList.contains("dark")) {
-    document.getElementById("profile-img").src = "default-avatar-white.png";
+    document.getElementById("profile-img").src = "default-avatar.white.png";
   } else {
     document.getElementById("profile-img").src = "default-avatar.png";
   }
