@@ -645,7 +645,7 @@ function handleSignUp(e) {
   localUsers.push({
     username: f.username.value.trim().toLowerCase(),
     email: f.email.value.trim().toLowerCase(),
-    password: f.password.value // hash this if you hash logins!
+    password: f.password.value // ❌ plain text!
   });
 
   // Save back to localStorage
@@ -655,6 +655,7 @@ function handleSignUp(e) {
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
 }
+
 
   function showProfilePage() {
   const display = document.getElementById("user-display");
