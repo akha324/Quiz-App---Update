@@ -712,6 +712,94 @@ function handleSignUp(e) {
   window.saveToLeaderboard = saveToLeaderboard;
   window.showLeaderboard = showLeaderboard;
 </script>
+
+// Overrides other functions to login.  
+<script>
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// ✅ Always use localStorage for localUsers
+if (!localStorage.getItem("localUsers")) {
+  localStorage.setItem("localUsers", JSON.stringify([
+    {
+      username: "ashiq",
+      email: "ashiq@example.com",
+      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123 hashed
+    },
+    {
+      username: "guest",
+      email: "guest@demo.com",
+      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass hashed
+    }
+  ]));
+}
+
+// ✅ Correct buildLoginForm (always consistent IDs)
+function buildLoginForm() {
+  card.innerHTML = `
+    ${backBtn()}
+    <h1 class="title">Log In</h1>
+    <form id="login-form" class="signup-form">
+      <input name="identifier" placeholder="Username or Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <label><input type="checkbox" id="remember-me" /> Remember Me</label>
+      <button type="submit" class="start">Log In</button>
+    </form>
+    <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Welcome back!</div>
+    <div id="login-error" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
+  `;
+  card.querySelector("#login-form").addEventListener("submit", handleLogIn);
+}
+
+// ✅ Correct handleLogIn
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+
+  const hash = await sha256(pw);
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username === id || u.email === id) && u.password === hash
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
+
+    if (f.querySelector("#remember-me")?.checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+// ✅ Re-attach your form builder for any login button
+window.showLogInForm = buildLoginForm;
+
+console.log("✅ handleLogIn and buildLoginForm overridden for localStorage only!");
+</script>
+  
 </body>
 
 </html>
