@@ -85,7 +85,7 @@ async function handleLogIn(e) {
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-err");
+  const err = card.querySelector("#login-error"); // ✅ fix the ID here!
 
   if (user) {
     msg.style.display = "block";
