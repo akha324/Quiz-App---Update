@@ -806,10 +806,9 @@ async function handleLogIn(e) {
 
     document.getElementById("profile-username").textContent = user.username;
 
-    // ✅ FIXED LINE:
-    const status = document.getElementById("profile-status");
+    const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
-    status.style.color = "green"; // always green
+    status.style.color = "green"; // ✅ always green
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
@@ -833,10 +832,9 @@ function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
   document.getElementById("profile-img").src = "default-avatar.png";
 
-  // ✅ FIXED LINE:
-  const status = document.getElementById("profile-status");
+  const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-  status.style.color = "red"; // always red
+  status.style.color = "red"; // ✅ always red
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
