@@ -56,19 +56,16 @@ async function handleLogIn(e) {
   const id = f.identifier.value.trim().toLowerCase();
   const pw = f.password.value;
 
-  // ✅ If you use hashing, hash the input password
   const hash = await sha256(pw);
-
-  // ✅ Always read from localStorage!
   const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
   const user = users.find(u =>
     (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-    u.password === hash  // compare hashed version
+    u.password === hash
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error");
+  const err = card.querySelector("#login-err");  // ✅ FIXED ID!
 
   if (user) {
     msg.style.display = "block";
@@ -78,7 +75,7 @@ async function handleLogIn(e) {
     uDisp.textContent = `👤 ${user.username}`;
     uDisp.style.display = "block";
 
-    if (f.querySelector("#remember-me").checked) {
+    if (f.querySelector("#remember-me")?.checked) {
       localStorage.setItem("rememberedUser", id);
     } else {
       localStorage.removeItem("rememberedUser");
@@ -87,7 +84,7 @@ async function handleLogIn(e) {
     setTimeout(showWelcome, 1200);
   } else {
     msg.style.display = "none";
-    err.style.display = "block";
+    err.style.display = "block";  // ✅ Will now show!
   }
 }
 
