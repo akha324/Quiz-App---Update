@@ -712,8 +712,27 @@ function handleSignUp(e) {
   window.saveToLeaderboard = saveToLeaderboard;
   window.showLeaderboard = showLeaderboard;
 </script>
- 
-<script>
+ <script>
+// ✅ Make sure the main quiz card container exists
+const card = document.getElementById("main-card");
+
+// ✅ Fallback: basic back button
+function backBtn() {
+  return `<button onclick="showWelcome()">⬅ Back</button>`;
+}
+
+// ✅ Fallback: showWelcome page
+function showWelcome() {
+  const uDisp = document.getElementById("user-display");
+  const username = uDisp?.textContent || "Guest";
+  card.innerHTML = `
+    <h1>Welcome back, ${username}!</h1>
+    <p>You are signed in.</p>
+    <button onclick="buildLoginForm()">Log In Again</button>
+  `;
+}
+
+// ✅ SHA-256 utility
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -722,23 +741,23 @@ async function sha256(str) {
     .join("");
 }
 
-// ✅ Always use localStorage for localUsers
+// ✅ Seed demo users if missing
 if (!localStorage.getItem("localUsers")) {
   localStorage.setItem("localUsers", JSON.stringify([
     {
       username: "ashiq",
       email: "ashiq@example.com",
-      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123 hashed
+      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123
     },
     {
       username: "guest",
       email: "guest@demo.com",
-      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass hashed
+      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass
     }
   ]));
 }
 
-// ✅ Correct buildLoginForm (always consistent IDs)
+// ✅ Correct Log In form builder
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -793,12 +812,11 @@ async function handleLogIn(e) {
   }
 }
 
-// ✅ Re-attach your form builder for any login button
+// ✅ Always attach the login form globally
 window.showLogInForm = buildLoginForm;
 
-console.log("✅ handleLogIn and buildLoginForm overridden for localStorage only!");
-</script>
-  
+console.log("✅ Final login override loaded!");
+</script>  
 </body>
 
 </html>
