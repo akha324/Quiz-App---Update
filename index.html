@@ -662,88 +662,7 @@ function saveToLeaderboard() {
   </script>
 </body>
 <script>
-  
-/* ------------------- OVERRIDDEN CODE -----------------------*/
-  async function sha256(str) {
-  const buf = new TextEncoder().encode(str);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function handleSignUp(e) {
-  e.preventDefault();
-  const f = e.target;
-  if (f.password.value !== f.confirm.value) {
-    card.querySelector("#signup-err").style.display = "block";
-    card.querySelector("#signup-ok").style.display = "none";
-    return;
-  }
-
-  // Load local users
-  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-
-  // Push new user
-  localUsers.push({
-    username: f.username.value.trim().toLowerCase(),
-    email: f.email.value.trim().toLowerCase(),
-    password: f.password.value // hash this if you hash logins!
-  });
-
-  // Save back to localStorage
-  localStorage.setItem("localUsers", JSON.stringify(localUsers));
-
-  f.reset();
-  card.querySelector("#signup-ok").style.display = "block";
-  card.querySelector("#signup-err").style.display = "none";
-}
-
-function showProfilePage() {
-  const display = document.getElementById("user-display");
-  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
-
-  // Update the always-visible container too
-  document.getElementById("profile-username").textContent = username;
-  const status = document.querySelector("#profile-container .status");
-  if (username === "guest" || username === "") {
-    status.textContent = "🔴 Offline";
-    status.style.color = "red";
-    document.querySelector("#profile-container .logout-link").style.display = "none";
-  } else {
-    status.textContent = "🟢 Online";
-    status.style.color = "green";
-    document.querySelector("#profile-container .logout-link").style.display = "inline-block";
-  }
-
-  // Then render the card view
-  card.innerHTML = `
-    <h1 class="title">Profile</h1>
-    <div class="profile-box" style="...">
-      <div style="...">
-        <img id="profile-img" src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="...">
-      </div>
-      <div style="...">
-        <p id="profile-username" style="...">👤 ${username}</p>
-        <p id="profile-status" class="status" style="...">${status.textContent}</p>
-        <a href="#" class="logout-link" onclick="logOut()" style="display: ${username === "guest" ? "none" : "inline-block"};">Log Out</a>
-      </div>
-    </div>
-  `;
-}
-
-  window.showProfilePage = showProfilePage;
-  window.logOut = logOut;
-  showWelcome();
-  window.showSettings = showSettings;
-  window.showLogInForm = showLogInForm;
-  window.showSignUpForm = showSignUpForm;
-  window.showWelcome = showWelcome;
-  window.startQuiz = startQuiz;
-  window.saveToLeaderboard = saveToLeaderboard;
-  window.showLeaderboard = showLeaderboard;
-</script>
-  <script>
+<script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -803,13 +722,14 @@ async function handleLogIn(e) {
 
     const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
-    status.style.color = "green"; // ✅ always green, works in light mode too
+    status.classList.add("online"); // ✅ Add .online class for light mode green
+    status.style.color = "green";   // ✅ Fallback for dark mode
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
     document.getElementById("profile-img").src = "default-avatar.png";
 
-    // ✅ Hide any top-left blue box if it exists
+    // ✅ Hide top-left blue box if it exists
     const display = document.getElementById("user-display");
     if (display) {
       display.style.display = "none";
@@ -835,13 +755,14 @@ function logOut() {
 
   const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-  status.style.color = "red"; // ✅ always red
+  status.classList.remove("online"); // ✅ Remove .online class
+  status.style.color = "red";        // ✅ Always red for offline
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
   localStorage.removeItem("rememberedUser");
 
-  // ✅ Also hide any top-left blue box if it exists
+  // ✅ Hide top-left blue box if it exists
   const display = document.getElementById("user-display");
   if (display) {
     display.style.display = "none";
@@ -854,7 +775,7 @@ function logOut() {
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
-</script>
 
+</script>
 </body>
 </html>
