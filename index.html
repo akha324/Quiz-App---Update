@@ -661,7 +661,8 @@ function saveToLeaderboard() {
 
   </script>
 </body>
-  <script>
+  
+<script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -757,9 +758,9 @@ async function handleLogIn(e) {
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
 
-  // ✅ Correct dark/light avatar switch
+  // ✅ Correct dark/light avatar switch (fixed)
   const profileImg = document.getElementById("profile-img");
-  if (document.body.classList.contains("white")) {
+  if (document.body.classList.contains("light")) {
     profileImg.src = "default-avatar.png";
   } 
   else {
