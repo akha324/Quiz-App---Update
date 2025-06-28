@@ -711,53 +711,50 @@ function handleSignUp(e) {
   window.startQuiz = startQuiz;
   window.saveToLeaderboard = saveToLeaderboard;
   window.showLeaderboard = showLeaderboard;
-</script>
- <script>
-// ✅ Make sure the main quiz card container exists
+</script><script>
+// ✅ Grab the shared main card ONCE
 const card = document.getElementById("main-card");
 
-// ✅ Fallback: basic back button
-function backBtn() {
-  return `<button onclick="showWelcome()">⬅ Back</button>`;
-}
-
-// ✅ Fallback: showWelcome page
-function showWelcome() {
-  const uDisp = document.getElementById("user-display");
-  const username = uDisp?.textContent || "Guest";
-  card.innerHTML = `
-    <h1>Welcome back, ${username}!</h1>
-    <p>You are signed in.</p>
-    <button onclick="buildLoginForm()">Log In Again</button>
-  `;
-}
-
-// ✅ SHA-256 utility
+// ✅ SHA-256 hashing utility
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map(b => b.toString(16).padStart(2, "0"))
-    .join("");
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
 
-// ✅ Seed demo users if missing
+// ✅ Seed demo users if localUsers is missing
 if (!localStorage.getItem("localUsers")) {
   localStorage.setItem("localUsers", JSON.stringify([
     {
       username: "ashiq",
       email: "ashiq@example.com",
-      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123
+      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123 hashed
     },
     {
       username: "guest",
       email: "guest@demo.com",
-      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass
+      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass hashed
     }
   ]));
 }
 
-// ✅ Correct Log In form builder
+// ✅ Back button utility
+function backBtn() {
+  return `<button onclick="showWelcome()">⬅ Back</button>`;
+}
+
+// ✅ Show Welcome page
+function showWelcome() {
+  const uDisp = document.getElementById("user-display");
+  const username = uDisp?.textContent || "Guest";
+  card.innerHTML = `
+    <h1>Welcome back, ${username}!</h1>
+    <p>You're signed in.</p>
+    <button onclick="buildLoginForm()">Log In Again</button>
+  `;
+}
+
+// ✅ Build Login form
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -774,7 +771,7 @@ function buildLoginForm() {
   card.querySelector("#login-form").addEventListener("submit", handleLogIn);
 }
 
-// ✅ Correct handleLogIn
+// ✅ Correct Log In handler
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -812,11 +809,12 @@ async function handleLogIn(e) {
   }
 }
 
-// ✅ Always attach the login form globally
+// ✅ Attach to global for buttons
 window.showLogInForm = buildLoginForm;
 
-console.log("✅ Final login override loaded!");
-</script>  
+console.log("✅ Final login code loaded!");
+</script>
+
 </body>
 
 </html>
