@@ -26,7 +26,6 @@ if (!localStorage.getItem("localUsers")) {
   ]));
 }
 
-// ✅ Handle Sign Up
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
@@ -47,7 +46,6 @@ async function handleSignUp(e) {
   localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
   f.reset();
-  card.querySelector("#signup-ok").textContent = "✅ Account created!";
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
 }
@@ -66,7 +64,7 @@ async function handleLogIn(e) {
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error");
+  const err = card.querySelector("#login-error"); // ✅ must match your HTML
 
   if (user) {
     msg.style.display = "block";
