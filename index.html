@@ -782,116 +782,215 @@ function logOut() {
   showWelcome();
 }
 
-/* ---------- PROFILE PAGE ---------- */
-function showProfilePage() {
+<script>
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/* ---------- SIGN-UP HANDLER ---------- */
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+
+  if (f.password.value !== f.confirm.value) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  const hash = await sha256(f.password.value);
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  });
+
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  f.reset();
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
+
+/* ---------- LOG-IN HANDLER ---------- */
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+  const hash = await sha256(pw);
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username === id || u.email === id) &&
+    u.password === hash
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    document.getElementById("profile-username").textContent = user.username;
+
+    const status = document.querySelector("#profile-container .status");
+    status.textContent = "🟢 Online";
+    status.classList.add("online");
+    status.style.color = "green";
+
+    document.querySelector("#profile-container .logout-link").style.display = "inline-block";
+
+    const profileImg = document.getElementById("profile-img");
+    if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
+    } else {
+      profileImg.src = "default-avatar.png";
+    }
+
+    const display = document.getElementById("user-display");
+    if (display) {
+      display.style.display = "none";
+    }
+
+    if (f.querySelector("#remember-me") && f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+/* ---------- LOG-OUT HANDLER ---------- */
+function logOut() {
+  document.getElementById("profile-username").textContent = "Not signed in";
+
+  const profileImg = document.getElementById("profile-img");
+  if (document.body.classList.contains("light")) {
+    profileImg.src = "default-avatar.png";
+  } 
+  if (document.body.classList.contains("dark")) {
+    profileImg.src = "default-avatar-white.png";
+  }
+
+  const status = document.querySelector("#profile-container .status");
+  status.textContent = "🔴 Offline";
+  status.classList.remove("online");
+  status.style.color = "red";
+
+  document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  localStorage.removeItem("rememberedUser");
+
+  const display = document.getElementById("user-display");
+  if (display) {
+    display.style.display = "none";
+  }
+
+  showWelcome();
+}
+
+/* ---------- PROFILE PAGE WITH TABS ---------- */
+function showProfilePage(tab = 'overview') {
   const username = document.getElementById("profile-username").textContent || "Not signed in";
   const avatar = document.getElementById("profile-img").src;
 
-  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
-    .filter(s => s.username === username)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  const historyList = scores.length > 0
-    ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
-    : "<p>No play history yet.</p>";
-
-  // 40 random avatars
-  const avatarOptions = Array.from({ length: 40 }, (_, i) => `
-    <img src="avatars/avatar${i + 1}.png" 
-         onclick="selectProfileImage('avatars/avatar${i + 1}.png')" 
-         style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid #ccc;transition:0.3s;">
-  `).join("");
+  let tabContent = '';
+  if (tab === 'overview') {
+    const status = document.querySelector("#profile-container .status").textContent;
+    tabContent = `
+      <h2>${username}</h2>
+      <p>Status: ${status}</p>
+    `;
+  }
+  else if (tab === 'avatars') {
+    let avatars = '';
+    for (let i = 1; i <= 40; i++) {
+      avatars += `<img src="avatar${i}.png" onclick="setAvatar('avatar${i}.png')" 
+        style="width:100px;height:100px;border-radius:50%;cursor:pointer;">`;
+    }
+    tabContent = `
+      <h2>Choose Your Avatar</h2>
+      <div style="max-height:400px;overflow-y:auto;padding:10px;">
+        <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:12px;">
+          ${avatars}
+        </div>
+      </div>
+      <p style="text-align:center;">⬇️ Scroll for more ⬇️</p>
+    `;
+  }
+  else if (tab === 'history') {
+    const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
+      .filter(s => s.username === username)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const historyList = scores.length > 0
+      ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
+      : "<p>No play history yet.</p>";
+    tabContent = `<h2>Play History</h2>${historyList}`;
+  }
 
   card.innerHTML = `
-    <button class="back-arrow" onclick="showWelcome()"
-      style="background:none;border:none;cursor:pointer;position:absolute;top:20px;left:20px;">
-      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" fill="none"/></svg>
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <h1 class="title">Profile</h1>
-
-    <div class="tabs" style="text-align:center;margin-bottom:20px;">
-      <button onclick="showTab('profile-info')" class="tab-btn start active">Profile Info</button>
-      <button onclick="showTab('play-history')" class="tab-btn start">Play History</button>
-      <button onclick="showTab('avatar-change')" class="tab-btn start">Change Avatar</button>
+    <div class="tabs" style="display:flex;gap:12px;justify-content:center;margin-bottom:20px;">
+      <button onclick="showProfilePage('overview')" class="start">Overview</button>
+      <button onclick="showProfilePage('avatars')" class="start">Choose Avatar</button>
+      <button onclick="showProfilePage('history')" class="start">Play History</button>
     </div>
-
-    <div id="profile-info" class="tab-content" style="display:block; text-align:center;">
-      <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
-      <h2 style="margin:12px 0;">${username}</h2>
-      <button class="btn-home" onclick="logOut()" style="margin-top:20px;">Log Out</button>
-    </div>
-
-    <div id="play-history" class="tab-content" style="display:none;">
-      <h3>Play History</h3>
-      ${historyList}
-    </div>
-
-    <div id="avatar-change" class="tab-content" style="display:none; text-align:center;">
-      <h3>Select an Avatar</h3>
-      <div style="display:flex;flex-wrap:wrap;justify-content:center;max-height:300px;overflow-y:auto;">
-        ${avatarOptions}
+    <div class="profile-content" style="text-align:center;">
+      <img src="${avatar}" alt="Profile Picture"
+        style="width:150px;height:150px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;margin-bottom:20px;">
+      ${tabContent}
+      <div style="margin-top:20px;">
+        <button class="start" onclick="logOut()">Log Out</button>
       </div>
-      <label class="upload-btn" 
-        style="display:inline-block;margin-top:20px;padding:10px 20px;background:#f8be2e;color:#000;border-radius:5px;cursor:pointer;">
-        📁 Upload Image
-        <input type="file" accept="image/*" onchange="updateProfileImage(event)" style="display:none;">
-      </label>
     </div>
-
-    <style>
-      .tab-btn.start {
-        background: #f8be2e;
-        color: #000;
-        font-family: inherit;
-        font-weight: bold;
-        border: none;
-        padding: 10px 20px;
-        margin: 0 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-      .tab-btn.start:hover {
-        background: #ffc107 !important;
-      }
-      .tab-btn.start.active {
-        background: #ffc107 !important;
-      }
-      .btn-home {
-        background: #03a9f4;
-        color: #fff;
-        font-family: inherit;
-        font-weight: bold;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background 0.3s;
-      }
-      .btn-home:hover {
-        background: #0288d1 !important;
-      }
-      .tab-content img:hover {
-        border-color: #f8be2e !important;
-        transform: scale(1.05);
-      }
-    </style>
   `;
 }
 
-function selectProfileImage(src) {
+function setAvatar(src) {
   const profileImg = document.getElementById("profile-img");
   profileImg.src = src;
-  showProfilePage();
+  showProfilePage('avatars');
 }
 
-function showTab(tabId) {
-  document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
-  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
-  document.getElementById(tabId).style.display = "block";
-  const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
-  document.querySelectorAll(".tab-btn")[index].classList.add("active");
-}
+/* ---------- HOOK PROFILE PICTURE CLICK ---------- */
+document.getElementById("profile-img").onclick = showProfilePage;
+
+/* ---------- EXPORT TO GLOBAL ---------- */
+window.handleSignUp = handleSignUp;
+window.handleLogIn = handleLogIn;
+window.logOut = logOut;
+
+/* ---------- INITIAL WELCOME + AVATAR ON LOAD ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  showWelcome();
+
+  const profileImg = document.getElementById("profile-img");
+  if (profileImg) {
+    if (document.body.classList.contains("light")) {
+      profileImg.src = "default-avatar.png";
+    } 
+    else if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
+    }
+  }
+});
+</script>
 
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
 document.getElementById("profile-img").onclick = showProfilePage;
