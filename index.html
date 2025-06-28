@@ -707,6 +707,106 @@ function handleSignUp(e) {
   window.saveToLeaderboard = saveToLeaderboard;
   window.showLeaderboard = showLeaderboard;
 </script>
+<script>
+/* ---------- BASIC HASH FUNCTION ---------- */
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/* ---------- SIGN-UP HANDLER ---------- */
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+  if (f.password.value !== f.confirm.value) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  const hash = await sha256(f.password.value);
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  });
+
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  f.reset();
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
+
+/* ---------- LOG-IN HANDLER ---------- */
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+  const hash = await sha256(pw);
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username === id || u.email === id) &&
+    u.password === hash
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const display = document.getElementById("user-display");
+    display.textContent = `👤 ${user.username}`;
+    display.style.display = "block";
+
+    // ✅ Update profile container
+    document.getElementById("profile-username").textContent = user.username;
+    document.querySelector("#profile-container .status").textContent = "🟢 Online";
+    document.querySelector("#profile-container .logout-link").style.display = "inline-block";
+
+    if (f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+/* ---------- LOG-OUT HANDLER ---------- */
+function logOut() {
+  const display = document.getElementById("user-display");
+  display.textContent = "";
+  display.style.display = "none";
+
+  document.getElementById("profile-username").textContent = "Not signed in";
+  document.getElementById("profile-img").src = "default-avatar.png"; // default avatar
+  document.querySelector("#profile-container .status").textContent = "🔴 Offline";
+  document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  localStorage.removeItem("rememberedUser");
+  showWelcome();
+}
+
+/* ---------- EXPORT TO GLOBAL ---------- */
+window.handleSignUp = handleSignUp;
+window.handleLogIn = handleLogIn;
+window.logOut = logOut;
+</script>
+
 </body>
 
 </html>
