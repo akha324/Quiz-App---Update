@@ -804,18 +804,14 @@ async function handleLogIn(e) {
     msg.style.display = "block";
     err.style.display = "none";
 
-    // ✅ Update profile container
     document.getElementById("profile-username").textContent = user.username;
 
     const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
-
-    // ✅ Always green for Online
-    status.style.color = "green";
+    status.style.color = "green"; // ✅ always green
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    // ✅ Update profile picture if needed
     document.getElementById("profile-img").src = "default-avatar.png";
 
     if (f.querySelector("#remember-me").checked) {
@@ -834,12 +830,11 @@ async function handleLogIn(e) {
 /* ---------- LOG-OUT HANDLER ---------- */
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
-  document.getElementById("profile-img").src = "default-avatar.png"; // default avatar
+  document.getElementById("profile-img").src = "default-avatar.png";
+
   const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-
-  // ✅ Always red for Offline
-  status.style.color = "red";
+  status.style.color = "red"; // ✅ always red
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
@@ -852,5 +847,6 @@ window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
 </script>
+
 </body>
 </html>
