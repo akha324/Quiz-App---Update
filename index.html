@@ -782,65 +782,74 @@ function logOut() {
   showWelcome();
 }
 
-/* ---------- PROFILE PAGE WITH TABS ---------- */
-function showProfilePage(tab = 'overview') {
+/* ---------- PROFILE PAGE ---------- */
+function showProfilePage() {
   const username = document.getElementById("profile-username").textContent || "Not signed in";
   const avatar = document.getElementById("profile-img").src;
 
-  let tabContent = '';
-  if (tab === 'overview') {
-    const status = document.querySelector("#profile-container .status").textContent;
-    tabContent = `
-      <h2>${username}</h2>
-      <p>Status: ${status}</p>
-    `;
-  }
-  else if (tab === 'avatars') {
-    tabContent = `
-      <h2>Choose Your Avatar</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:12px;margin:20px 0;">
-        <img src="avatar1.png" onclick="setAvatar('avatar1.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
-        <img src="avatar2.png" onclick="setAvatar('avatar2.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
-        <img src="avatar3.png" onclick="setAvatar('avatar3.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
-      </div>
-      <p style="text-align:center;">⬇️ Scroll for more ⬇️</p>
-    `;
-  }
-  else if (tab === 'history') {
-    const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
-      .filter(s => s.username === username)
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    const historyList = scores.length > 0
-      ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
-      : "<p>No play history yet.</p>";
-    tabContent = `<h2>Play History</h2>${historyList}`;
-  }
+  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
+    .filter(s => s.username === username)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  const historyList = scores.length > 0
+    ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
+    : "<p>No play history yet.</p>";
+
+  // 40 random avatars (replace with your actual image URLs)
+  const avatarOptions = Array.from({ length: 40 }, (_, i) => `
+    <img src="avatars/avatar${i + 1}.png" 
+         onclick="selectProfileImage('avatars/avatar${i + 1}.png')" 
+         style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid transparent;">
+  `).join("");
 
   card.innerHTML = `
     <button class="back-arrow" onclick="showWelcome()">
       <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <h1 class="title">Profile</h1>
-    <div class="tabs" style="display:flex;gap:8px;margin-bottom:20px;">
-      <button onclick="showProfilePage('overview')" class="start">Overview</button>
-      <button onclick="showProfilePage('avatars')" class="start">Choose Avatar</button>
-      <button onclick="showProfilePage('history')" class="start">Play History</button>
+
+    <div class="tabs">
+      <button onclick="showTab('profile-info')" class="tab-btn active">Profile Info</button>
+      <button onclick="showTab('play-history')" class="tab-btn">Play History</button>
+      <button onclick="showTab('avatar-change')" class="tab-btn">Change Avatar</button>
     </div>
-    <div class="profile-content" style="text-align:center;">
-      <img src="${avatar}" alt="Profile Picture"
-        style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;margin-bottom:20px;">
-      ${tabContent}
-      <div style="margin-top:20px;">
-        <button class="start" onclick="logOut()">Log Out</button>
+
+    <div id="profile-info" class="tab-content" style="display:block; text-align:center;">
+      <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
+      <h2 style="margin:12px 0;">${username}</h2>
+      <button class="start" onclick="logOut()" style="margin-top:20px;">Log Out</button>
+    </div>
+
+    <div id="play-history" class="tab-content" style="display:none;">
+      <h3>Play History</h3>
+      ${historyList}
+    </div>
+
+    <div id="avatar-change" class="tab-content" style="display:none; text-align:center;">
+      <h3>Select an Avatar</h3>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;max-height:300px;overflow-y:auto;">
+        ${avatarOptions}
       </div>
+      <label class="upload-btn" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#f8be2e;color:#000;border-radius:5px;cursor:pointer;">
+        📁 Upload Image
+        <input type="file" accept="image/*" onchange="updateProfileImage(event)" style="display:none;">
+      </label>
     </div>
   `;
 }
 
-function setAvatar(src) {
+function selectProfileImage(src) {
   const profileImg = document.getElementById("profile-img");
   profileImg.src = src;
-  showProfilePage('avatars');
+  showProfilePage();
+}
+
+function showTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById(tabId).style.display = "block";
+  const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
+  document.querySelectorAll(".tab-btn")[index].classList.add("active");
 }
 
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
