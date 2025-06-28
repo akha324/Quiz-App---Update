@@ -759,10 +759,11 @@ function logOut() {
 
   // ✅ Correct dark/light avatar switch
   const profileImg = document.getElementById("profile-img");
-  if (document.body.classList.contains("dark")) {
-    profileImg.src = "default-avatar-white.png";
-  } else {
+  if (document.body.classList.contains("white")) {
     profileImg.src = "default-avatar.png";
+  } 
+  else if (document.body.classList.contains("dark")) {
+    profileImg.src = "default-avatar-white.png";
   }
 
   const status = document.querySelector("#profile-container .status");
@@ -795,10 +796,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Ensure correct avatar on page load
   const profileImg = document.getElementById("profile-img");
   if (profileImg) {
-    if (document.body.classList.contains("dark")) {
-      profileImg.src = "default-avatar-white.png";
-    } else {
+    if (document.body.classList.contains("light")) {
       profileImg.src = "default-avatar.png";
+    } 
+    else if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
     }
   }
 });
