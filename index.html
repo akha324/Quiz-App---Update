@@ -662,7 +662,7 @@ function saveToLeaderboard() {
   </script>
 </body>
   
-  <script>
+<script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -728,7 +728,6 @@ async function handleLogIn(e) {
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    // ✅ Correct dark/light avatar switch
     const profileImg = document.getElementById("profile-img");
     if (document.body.classList.contains("dark")) {
       profileImg.src = "default-avatar-white.png";
@@ -758,13 +757,11 @@ async function handleLogIn(e) {
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
 
-  // ✅ Correct dark/light avatar switch (fixed)
   const profileImg = document.getElementById("profile-img");
   if (document.body.classList.contains("light")) {
     profileImg.src = "default-avatar.png";
   } 
-  
-  if (document.body.classList.contains("dark")){
+  if (document.body.classList.contains("dark")) {
     profileImg.src = "default-avatar-white.png";
   }
 
@@ -785,50 +782,68 @@ function logOut() {
   showWelcome();
 }
 
-/* ---------- PROFILE PAGE ---------- */
-function showProfilePage() {
+/* ---------- PROFILE PAGE WITH TABS ---------- */
+function showProfilePage(tab = 'overview') {
   const username = document.getElementById("profile-username").textContent || "Not signed in";
   const avatar = document.getElementById("profile-img").src;
 
-  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
-    .filter(s => s.username === username)
-    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-  const historyList = scores.length > 0
-    ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
-    : "<p>No play history yet.</p>";
+  let tabContent = '';
+  if (tab === 'overview') {
+    const status = document.querySelector("#profile-container .status").textContent;
+    tabContent = `
+      <h2>${username}</h2>
+      <p>Status: ${status}</p>
+    `;
+  }
+  else if (tab === 'avatars') {
+    tabContent = `
+      <h2>Choose Your Avatar</h2>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:12px;margin:20px 0;">
+        <img src="avatar1.png" onclick="setAvatar('avatar1.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
+        <img src="avatar2.png" onclick="setAvatar('avatar2.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
+        <img src="avatar3.png" onclick="setAvatar('avatar3.png')" style="width:80px;height:80px;border-radius:50%;cursor:pointer;">
+      </div>
+      <p style="text-align:center;">⬇️ Scroll for more ⬇️</p>
+    `;
+  }
+  else if (tab === 'history') {
+    const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
+      .filter(s => s.username === username)
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const historyList = scores.length > 0
+      ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
+      : "<p>No play history yet.</p>";
+    tabContent = `<h2>Play History</h2>${historyList}`;
+  }
 
   card.innerHTML = `
     <button class="back-arrow" onclick="showWelcome()">
       <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
     </button>
     <h1 class="title">Profile</h1>
-    <div class="profile-box" style="text-align:center;">
-      <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
-      <h2 style="margin:12px 0;">${username}</h2>
-      <label style="display:block;margin:20px 0;">
-        <span style="display:block;margin-bottom:6px;">Change Profile Picture:</span>
-        <input type="file" accept="image/*" onchange="updateProfileImage(event)" />
-      </label>
-      <h3>Play History</h3>
-      ${historyList}
-      <button class="start" onclick="logOut()" style="margin-top:20px;">Log Out</button>
+    <div class="tabs" style="display:flex;gap:8px;margin-bottom:20px;">
+      <button onclick="showProfilePage('overview')" class="start">Overview</button>
+      <button onclick="showProfilePage('avatars')" class="start">Choose Avatar</button>
+      <button onclick="showProfilePage('history')" class="start">Play History</button>
+    </div>
+    <div class="profile-content" style="text-align:center;">
+      <img src="${avatar}" alt="Profile Picture"
+        style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;margin-bottom:20px;">
+      ${tabContent}
+      <div style="margin-top:20px;">
+        <button class="start" onclick="logOut()">Log Out</button>
+      </div>
     </div>
   `;
 }
 
-function updateProfileImage(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    const profileImg = document.getElementById("profile-img");
-    profileImg.src = evt.target.result;
-    showProfilePage();
-  };
-  reader.readAsDataURL(file);
+function setAvatar(src) {
+  const profileImg = document.getElementById("profile-img");
+  profileImg.src = src;
+  showProfilePage('avatars');
 }
 
+/* ---------- HOOK PROFILE PICTURE CLICK ---------- */
 document.getElementById("profile-img").onclick = showProfilePage;
 
 /* ---------- EXPORT TO GLOBAL ---------- */
@@ -838,12 +853,9 @@ window.logOut = logOut;
 
 /* ---------- INITIAL WELCOME + AVATAR ON LOAD ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Always show welcome box
   showWelcome();
 
-  // ✅ Ensure correct avatar on page load
   const profileImg = document.getElementById("profile-img");
-  
   if (profileImg) {
     if (document.body.classList.contains("light")) {
       profileImg.src = "default-avatar.png";
