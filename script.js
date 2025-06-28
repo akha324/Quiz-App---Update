@@ -1,7 +1,7 @@
 // ✅ Grab main container for card
 const card = document.getElementById("main-card");
 
-// ✅ Utility: SHA-256 hash for password
+// ✅ SHA-256 hash for password
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -26,6 +26,7 @@ if (!localStorage.getItem("localUsers")) {
   ]));
 }
 
+// ✅ Sign Up
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
@@ -46,10 +47,12 @@ async function handleSignUp(e) {
   localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
   f.reset();
+  card.querySelector("#signup-ok").textContent = "✅ Account created successfully!";
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
 }
 
+// ✅ Log In
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -64,7 +67,7 @@ async function handleLogIn(e) {
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error"); // ✅ must match your HTML
+  const err = card.querySelector("#login-error");
 
   if (user) {
     msg.style.display = "block";
@@ -87,7 +90,7 @@ async function handleLogIn(e) {
   }
 }
 
-// ✅ Build Sign Up form
+// ✅ Sign Up form builder
 function buildSignupForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -106,7 +109,7 @@ function buildSignupForm() {
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
-// ✅ Build Log In form
+// ✅ Log In form builder
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -123,15 +126,17 @@ function buildLoginForm() {
   card.querySelector("#login-form").addEventListener("submit", handleLogIn);
 }
 
-// ✅ Simple placeholder for back button
+// ✅ Back button
 function backBtn() {
   return `<button onclick="showWelcome()">⬅ Back</button>`;
 }
 
-// ✅ Placeholder for showWelcome
+// ✅ Show welcome page with user
 function showWelcome() {
+  const uDisp = document.getElementById("user-display");
+  const username = uDisp?.textContent || "Guest";
   card.innerHTML = `
     <h1>Welcome to the Quiz App!</h1>
-    <p>You're logged in.</p>
+    <p>You are signed in as: ${username}</p>
   `;
 }
