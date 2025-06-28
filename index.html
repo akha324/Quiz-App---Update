@@ -292,28 +292,23 @@ function startQuiz() {
     }
     window.showSignUpForm = showSignUpForm;
 
-    async function handleSignUp(e) {
+   async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
 
-  if (f.password.value !== f.confirm.value) {
+  if (f.password.value !== f.confirm.value || !f.querySelector("#agree-terms")?.checked) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
     return;
   }
 
-  // ✅ Hash the password before storing it
   const hash = await sha256(f.password.value);
-
-  // ✅ Always read & update from localStorage
   const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-
   localUsers.push({
     username: f.username.value.trim().toLowerCase(),
     email: f.email.value.trim().toLowerCase(),
     password: hash
   });
-
   localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
   f.reset();
@@ -364,7 +359,7 @@ async function handleLogIn(e) {
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error");
+  const err = card.querySelector("#login-error"); // ✅ must match your HTML
 
   if (user) {
     msg.style.display = "block";
