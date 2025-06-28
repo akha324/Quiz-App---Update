@@ -795,29 +795,42 @@ function showProfilePage() {
     ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
     : "<p>No play history yet.</p>";
 
-  // 40 random avatars (replace with your actual image URLs)
+  // 40 random avatars
   const avatarOptions = Array.from({ length: 40 }, (_, i) => `
     <img src="avatars/avatar${i + 1}.png" 
          onclick="selectProfileImage('avatars/avatar${i + 1}.png')" 
-         style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid transparent;">
+         style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid #ccc;transition:0.3s;">
   `).join("");
 
   card.innerHTML = `
-    <button class="back-arrow" onclick="showWelcome()">
-      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    <button class="back-arrow" onclick="showWelcome()"
+      style="background:none;border:none;cursor:pointer;position:absolute;top:20px;left:20px;">
+      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" fill="none"/></svg>
     </button>
     <h1 class="title">Profile</h1>
 
-    <div class="tabs">
-      <button onclick="showTab('profile-info')" class="tab-btn active">Profile Info</button>
-      <button onclick="showTab('play-history')" class="tab-btn">Play History</button>
-      <button onclick="showTab('avatar-change')" class="tab-btn">Change Avatar</button>
+    <div class="tabs" style="text-align:center;margin-bottom:20px;">
+      <button onclick="showTab('profile-info')" class="tab-btn active"
+        style="background:#f8be2e;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;transition:0.2s;">
+        Profile Info
+      </button>
+      <button onclick="showTab('play-history')" class="tab-btn"
+        style="background:#555;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;color:#fff;transition:0.2s;">
+        Play History
+      </button>
+      <button onclick="showTab('avatar-change')" class="tab-btn"
+        style="background:#555;border:none;padding:10px 20px;margin:0 5px;border-radius:5px;cursor:pointer;color:#fff;transition:0.2s;">
+        Change Avatar
+      </button>
     </div>
 
     <div id="profile-info" class="tab-content" style="display:block; text-align:center;">
       <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
       <h2 style="margin:12px 0;">${username}</h2>
-      <button class="start" onclick="logOut()" style="margin-top:20px;">Log Out</button>
+      <button class="start" onclick="logOut()" 
+        style="margin-top:20px;padding:10px 20px;background:#f44336;color:#fff;border:none;border-radius:5px;cursor:pointer;">
+        Log Out
+      </button>
     </div>
 
     <div id="play-history" class="tab-content" style="display:none;">
@@ -830,11 +843,27 @@ function showProfilePage() {
       <div style="display:flex;flex-wrap:wrap;justify-content:center;max-height:300px;overflow-y:auto;">
         ${avatarOptions}
       </div>
-      <label class="upload-btn" style="display:inline-block;margin-top:20px;padding:10px 20px;background:#f8be2e;color:#000;border-radius:5px;cursor:pointer;">
+      <label class="upload-btn" 
+        style="display:inline-block;margin-top:20px;padding:10px 20px;background:#f8be2e;color:#000;border-radius:5px;cursor:pointer;">
         📁 Upload Image
         <input type="file" accept="image/*" onchange="updateProfileImage(event)" style="display:none;">
       </label>
     </div>
+
+    <style>
+      .tabs .tab-btn:hover {
+        background: #f8be2e !important;
+        color: #000 !important;
+      }
+      .tabs .tab-btn.active {
+        background: #f8be2e !important;
+        color: #000 !important;
+      }
+      .tab-content img:hover {
+        border-color: #f8be2e !important;
+        transform: scale(1.05);
+      }
+    </style>
   `;
 }
 
@@ -846,10 +875,17 @@ function selectProfileImage(src) {
 
 function showTab(tabId) {
   document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
-  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(el => {
+    el.classList.remove("active");
+    el.style.background = "#555";
+    el.style.color = "#fff";
+  });
   document.getElementById(tabId).style.display = "block";
   const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
-  document.querySelectorAll(".tab-btn")[index].classList.add("active");
+  const activeBtn = document.querySelectorAll(".tab-btn")[index];
+  activeBtn.classList.add("active");
+  activeBtn.style.background = "#f8be2e";
+  activeBtn.style.color = "#000";
 }
 
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
