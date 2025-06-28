@@ -23,47 +23,32 @@ if (!localStorage.getItem("localUsers")) {
   ]));
 }
 
-// ✅ Handle Sign Up
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
-  const agreed = f.querySelector("#agree-terms")?.checked;
-
-  if (f.password.value !== f.confirm.value || !agreed) {
+  if (f.password.value !== f.confirm.value) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
     return;
   }
 
+  // ✅ Hash the password
   const hash = await sha256(f.password.value);
 
-  const newUser = {
-    username: f.username.value.trim(),
+  // ✅ Get existing users
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  // ✅ Add the new user
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
     email: f.email.value.trim().toLowerCase(),
     password: hash
-  };
+  });
 
-  // ✅ Store locally
-  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-  localUsers.push(newUser);
+  // ✅ Save back to localStorage
   localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
-  // ✅ Send to server
-  try {
-    const res = await fetch("/api/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newUser)
-    });
-    if (!res.ok) {
-      throw new Error("Server error");
-    }
-  } catch (err) {
-    console.warn("Could not reach server, using local only:", err);
-  }
-
   f.reset();
-  card.querySelector("#signup-ok").textContent = "✅ Account created!";
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
 }
