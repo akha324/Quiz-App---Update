@@ -518,3 +518,66 @@ body:not(.dark) #profile-container .status.online {
 body:not(.dark) #profile-container .status.online {
   color: green !important
 }
+
+/* ─────────── PROFILE PAGE TAB BUTTONS ─────────── */
+.tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tabs .tab-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ffca28, #ffc107);
+  color: #111;
+  box-shadow: 0 4px 8px rgba(255, 202, 40, .45);
+  transition: transform .25s, box-shadow .25s, background .25s;
+}
+
+.tabs .tab-btn:hover {
+  background: linear-gradient(135deg, #ffde59, #ffd740);
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(255, 202, 40, .75);
+}
+
+.tabs .tab-btn:active {
+  transform: scale(.96);
+  box-shadow: 0 3px 6px rgba(255, 202, 40, .4);
+}
+
+.tabs .tab-btn.active {
+  background: linear-gradient(135deg, #ffd740, #ffc107);
+}
+
+/* ─────────── PROFILE PAGE LOGOUT BUTTON ─────────── */
+.profile-logout-btn {
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #42a5f5, #1e88e5);
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(66, 165, 245, .45);
+  transition: transform .25s, box-shadow .25s, background .25s;
+}
+
+.profile-logout-btn:hover {
+  background: linear-gradient(135deg, #64b5f6, #2196f3);
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(66, 165, 245, .75);
+}
+
+.profile-logout-btn:active {
+  transform: scale(.96);
+  box-shadow: 0 3px 6px rgba(66, 165, 245, .4);
+}
