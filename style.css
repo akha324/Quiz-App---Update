@@ -514,3 +514,7 @@ body:not(.dark) #profile-container .status.online {
 .status.offline {
   color: red;
 }
+
+body:not(.dark) #profile-container .status.online {
+  color: green !important
+}
