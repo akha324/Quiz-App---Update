@@ -1,3 +1,6 @@
+// ✅ Grab main container for card
+const card = document.getElementById("main-card");
+
 // ✅ Utility: SHA-256 hash for password
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
@@ -7,25 +10,27 @@ async function sha256(str) {
     .join("");
 }
 
-// ✅ Seeding static users if needed (optional for first-time demo)
+// ✅ Seed static users if needed
 if (!localStorage.getItem("localUsers")) {
   localStorage.setItem("localUsers", JSON.stringify([
     {
       username: "ashiq",
       email: "ashiq@example.com",
-      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123 hashed
+      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123
     },
     {
       username: "guest",
       email: "guest@demo.com",
-      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass hashed
+      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass
     }
   ]));
 }
 
+// ✅ Handle Sign Up
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
+
   if (f.password.value !== f.confirm.value || !f.querySelector("#agree-terms")?.checked) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
@@ -47,6 +52,7 @@ async function handleSignUp(e) {
   card.querySelector("#signup-err").style.display = "none";
 }
 
+// ✅ Handle Log In
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -56,12 +62,16 @@ async function handleLogIn(e) {
   const hash = await sha256(pw);
   const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
+  console.log("🔍 ID:", id);
+  console.log("🔍 Hash:", hash);
+  console.log("🔍 Users:", users);
+
   const user = users.find(u =>
     (u.username === id || u.email === id) && u.password === hash
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error"); // ✅ must match the buildLoginForm ID!
+  const err = card.querySelector("#login-error");
 
   if (user) {
     msg.style.display = "block";
@@ -103,6 +113,7 @@ function buildSignupForm() {
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
+// ✅ Build Log In form
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -117,4 +128,17 @@ function buildLoginForm() {
     <div id="login-error" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
   `;
   card.querySelector("#login-form").addEventListener("submit", handleLogIn);
+}
+
+// ✅ Simple placeholder for back button
+function backBtn() {
+  return `<button onclick="showWelcome()">⬅ Back</button>`;
+}
+
+// ✅ Placeholder for showWelcome
+function showWelcome() {
+  card.innerHTML = `
+    <h1>Welcome to the Quiz App!</h1>
+    <p>You're logged in.</p>
+  `;
 }
