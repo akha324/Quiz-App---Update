@@ -806,7 +806,7 @@ async function handleLogIn(e) {
 
     document.getElementById("profile-username").textContent = user.username;
 
-    const status = document.querySelector("#profile-container .status");
+    const status = document.getElementById("profile-status");
     status.textContent = "🟢 Online";
     status.style.color = "green"; // ✅ always green
 
