@@ -421,7 +421,7 @@ async function handleLogIn(e) {
 }
 
 function logOut() {
-  const status = document.getElementById("profile-status");
+  const display = document.getElementById("user-display");
   display.textContent = "";
   display.style.display = "none";
 
@@ -806,7 +806,7 @@ async function handleLogIn(e) {
 
     document.getElementById("profile-username").textContent = user.username;
 
-    const status = document.getElementById("profile-status");
+    const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
     status.style.color = "green"; // ✅ always green
 
