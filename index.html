@@ -713,15 +713,16 @@ function handleSignUp(e) {
   window.showLeaderboard = showLeaderboard;
 </script>
 <script>
-
-// ✅ SHA-256 hashing utility
+// ✅ Utility: SHA-256 hash for passwords
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
-  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
-// ✅ Seed demo users if localUsers is missing
+// ✅ Seed localUsers ONCE if missing
 if (!localStorage.getItem("localUsers")) {
   localStorage.setItem("localUsers", JSON.stringify([
     {
@@ -737,40 +738,66 @@ if (!localStorage.getItem("localUsers")) {
   ]));
 }
 
-// ✅ Back button utility
-function backBtn() {
-  return `<button onclick="showWelcome()">⬅ Back</button>`;
+// ✅ Back arrow button (your style)
+function backBtn(){
+  return `<button class="back-arrow" onclick="showWelcome()">
+    <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>`;
 }
 
 // ✅ Show Welcome page
-function showWelcome() {
-  const uDisp = document.getElementById("user-display");
-  const username = uDisp?.textContent || "Guest";
+function showWelcome(){
   card.innerHTML = `
-    <h1>Welcome back, ${username}!</h1>
-    <p>You're signed in.</p>
-    <button onclick="buildLoginForm()">Log In Again</button>
-  `;
+    <h1 class="title">Welcome to <span class="brand">QuizApp</span></h1>
+    <p class="subtitle">Test your knowledge • Sharpen your mind • Have fun</p>
+    <button class="start" onclick="startQuiz()">Start Quiz</button>`;
 }
 
-// ✅ Build Login form
-function buildLoginForm() {
+// ✅ Sign Up handler
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+
+  if (f.password.value !== f.confirm.value || !f.querySelector("input[name='agree']")?.checked) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  const hash = await sha256(f.password.value);
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  });
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  f.reset();
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
+
+// ✅ Show Sign Up form
+function showSignUpForm(){
   card.innerHTML = `
     ${backBtn()}
-    <h1 class="title">Log In</h1>
-    <form id="login-form" class="signup-form">
-      <input name="identifier" placeholder="Username or Email" required />
+    <h1 class="title">Create Account</h1>
+    <form id="signup-form" class="signup-form">
+      <input name="username" placeholder="Username" required />
+      <input name="email" type="email" placeholder="Email" required />
       <input name="password" type="password" placeholder="Password" required />
-      <label><input type="checkbox" id="remember-me" /> Remember Me</label>
-      <button type="submit" class="start">Log In</button>
+      <input name="confirm" type="password" placeholder="Confirm Password" required />
+      <label class="terms-check"><input type="checkbox" name="agree" required> I agree to the terms</label>
+      <button class="start" type="submit">Create Account</button>
     </form>
-    <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Welcome back!</div>
-    <div id="login-error" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
+    <div id="signup-ok" style="display:none;color:#4caf50;margin-top:12px">✅ Account created!</div>
+    <div id="signup-err" style="display:none;color:#f44336;margin-top:12px">❌ Passwords do not match or agreement missing.</div>
   `;
-  card.querySelector("#login-form").addEventListener("submit", handleLogIn);
+  card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
-// ✅ Correct Log In handler
+// ✅ Log In handler
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -808,10 +835,29 @@ async function handleLogIn(e) {
   }
 }
 
-// ✅ Attach to global for buttons
-window.showLogInForm = buildLoginForm;
+// ✅ Show Log In form (with correct back button)
+function showLogInForm() {
+  card.innerHTML = `
+    ${backBtn()}
+    <h1 class="title">Log In</h1>
+    <form id="login-form" class="signup-form">
+      <input name="identifier" placeholder="Username or Email" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <label><input type="checkbox" id="remember-me" /> Remember Me</label>
+      <button class="start" type="submit">Log In</button>
+    </form>
+    <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Welcome back!</div>
+    <div id="login-error" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
+  `;
+  card.querySelector("#login-form").addEventListener("submit", handleLogIn);
+}
 
-console.log("✅ Final login code loaded!");
+// ✅ Attach global for buttons
+window.showWelcome = showWelcome;
+window.showLogInForm = showLogInForm;
+window.showSignUpForm = showSignUpForm;
+
+console.log("✅ Local login script loaded successfully!");
 </script>
 
 </body>
