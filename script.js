@@ -1,3 +1,4 @@
+// ✅ Utility: SHA-256 hash for password
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -6,6 +7,108 @@ async function sha256(str) {
     .join("");
 }
 
+// ✅ Seeding static users if needed (optional for first-time demo)
+if (!localStorage.getItem("localUsers")) {
+  localStorage.setItem("localUsers", JSON.stringify([
+    {
+      username: "ashiq",
+      email: "ashiq@example.com",
+      password: "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // pass123 hashed
+    },
+    {
+      username: "guest",
+      email: "guest@demo.com",
+      password: "0f2c693ed9b5f2ffe3817f4a45e23be14f4918659293e5c8322c2af9ce0eecfc" // guestpass hashed
+    }
+  ]));
+}
+
+// ✅ Handle Sign Up
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+  const agreed = f.querySelector("#agree-terms")?.checked;
+
+  if (f.password.value !== f.confirm.value || !agreed) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  const hash = await sha256(f.password.value);
+
+  const newUser = {
+    username: f.username.value.trim(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  };
+
+  // ✅ Store locally
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+  localUsers.push(newUser);
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  // ✅ Send to server
+  try {
+    const res = await fetch("/api/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser)
+    });
+    if (!res.ok) {
+      throw new Error("Server error");
+    }
+  } catch (err) {
+    console.warn("Could not reach server, using local only:", err);
+  }
+
+  f.reset();
+  card.querySelector("#signup-ok").textContent = "✅ Account created!";
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
+
+// ✅ Handle Log In (local only for offline fallback)
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+
+  const hash = await sha256(pw);
+
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
+    u.password === hash
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-err");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
+
+    if (f.querySelector("#remember-me")?.checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+// ✅ Build Sign Up form
 function buildSignupForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -24,88 +127,7 @@ function buildSignupForm() {
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
-function handleSignUp(e) {
-  e.preventDefault();
-  const f = e.target;
-  const agreed = f.querySelector("#agree-terms")?.checked;
-  if (f.password.value !== f.confirm.value || !agreed) {
-    card.querySelector("#signup-err").style.display = "block";
-    card.querySelector("#signup-ok").style.display = "none";
-    return;
-  }
-  sha256(f.password.value).then(hash => {
-    const newUser = {
-      username: f.username.value.trim(),
-      email: f.email.value.trim().toLowerCase(),
-      password: hash
-    };
-    const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-    localUsers.push(newUser);
-    localStorage.setItem("localUsers", JSON.stringify(localUsers));
-
-    f.reset();
-    card.querySelector("#signup-ok").textContent = "✅ Account created!";
-    card.querySelector("#signup-ok").style.display = "block";
-    card.querySelector("#signup-err").style.display = "none";
-  });
-}
-
-function showResetForm() {
-  card.innerHTML = `
-    ${backBtn()}
-    <h1 class="title">Reset Password</h1>
-    <form id="reset-form" class="signup-form">
-      <input type="email" name="email" placeholder="Enter your email" required />
-      <button class="start" type="submit">Send Reset Link</button>
-    </form>
-    <p id="reset-msg" style="display:none;color:#4caf50;margin-top:18px">
-      📧 Password reset link sent (simulated).
-    </p>`;
-  card.querySelector("#reset-form").onsubmit = e => {
-    e.preventDefault();
-    e.target.reset();
-    card.querySelector("#reset-msg").style.display = "block";
-  };
-}
-
-function saveToLeaderboard() {
-  const display = document.getElementById("user-display");
-  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
-  const scoreData = {
-    username,
-    score,
-    total: settings.numQuestions,
-    timestamp: new Date().toISOString()
-  };
-  const localScores = JSON.parse(localStorage.getItem("localScores") || "[]");
-  localScores.push(scoreData);
-  localStorage.setItem("localScores", JSON.stringify(localScores));
-  alert("✅ Score saved to leaderboard!");
-}
-
-function showLeaderboard() {
-  const localScores = JSON.parse(localStorage.getItem("localScores") || "[]");
-  localScores.sort((a, b) => b.score - a.score);
-  const top10 = localScores.slice(0, 10);
-  card.innerHTML = `
-    <button class="back-arrow" onclick="showWelcome()">
-      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-    </button>
-    <h1 class="title">🏆 Leaderboard</h1>
-    <p class="subtitle">Top 10 Scores</p>
-    <div class="leaderboard-box">
-      <ol class="leaderboard-list">
-        ${top10.map((entry, i) => `
-          <li class="leaderboard-entry">
-            <span class="rank">#${i + 1}</span>
-            <span class="user">${entry.username}</span>
-            <span class="score">${entry.score}/${entry.total}</span>
-            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
-          </li>`).join("")}
-      </ol>
-    </div>`;
-}
-
+// ✅ Build Log In form
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -113,6 +135,7 @@ function buildLoginForm() {
     <form id="login-form" class="signup-form">
       <input name="identifier" placeholder="Username or Email" required />
       <input name="password" type="password" placeholder="Password" required />
+      <label><input type="checkbox" id="remember-me" /> Remember Me</label>
       <button type="submit" class="start">Log In</button>
     </form>
     <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Logged in successfully!</div>
