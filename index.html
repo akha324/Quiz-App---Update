@@ -728,7 +728,12 @@ async function handleLogIn(e) {
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    document.getElementById("profile-img").src = "default-avatar.png";
+    // ✅ Set avatar based on dark mode
+    if (document.body.classList.contains("dark")) {
+      document.getElementById("profile-img").src = "default-avatar-white.png";
+    } else {
+      document.getElementById("profile-img").src = "default-avatar.png";
+    }
 
     const display = document.getElementById("user-display");
     if (display) {
@@ -751,7 +756,13 @@ async function handleLogIn(e) {
 /* ---------- LOG-OUT HANDLER ---------- */
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
-  document.getElementById("profile-img").src = "default-avatar.png";
+
+  // ✅ Set avatar based on dark mode
+  if (document.body.classList.contains("dark")) {
+    document.getElementById("profile-img").src = "default-avatar-white.png";
+  } else {
+    document.getElementById("profile-img").src = "default-avatar.png";
+  }
 
   const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
