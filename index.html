@@ -745,6 +745,7 @@ function showProfilePage() {
 </script>
   
 <script>
+// ✅ Utility: SHA-256 hash for password
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -753,7 +754,14 @@ async function sha256(str) {
     .join("");
 }
 
-/* ---------- SIGN-UP HANDLER ---------- */
+// ✅ Utility: pick correct avatar for light/dark
+function getDefaultAvatar() {
+  return document.body.classList.contains("dark")
+    ? "default-avatar-white.png"
+    : "default-avatar.png";
+}
+
+// ✅ SIGN-UP HANDLER
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
@@ -779,12 +787,13 @@ async function handleSignUp(e) {
   card.querySelector("#signup-err").style.display = "none";
 }
 
-/* ---------- LOG-IN HANDLER ---------- */
+// ✅ LOG-IN HANDLER
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
   const pw = f.password.value;
+
   const hash = await sha256(pw);
   const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
@@ -800,17 +809,29 @@ async function handleLogIn(e) {
     msg.style.display = "block";
     err.style.display = "none";
 
-    document.getElementById("profile-username").textContent = user.username;
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
 
-    const status = document.querySelector("#profile-container .status");
-    status.textContent = "🟢 Online";
-    status.style.color = "green"; // ✅ always green
+    // ✅ Update always-visible container
+    const statusMain = document.querySelector("#profile-container .status");
+    statusMain.textContent = "🟢 Online";
+    statusMain.style.color = "green";
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    document.getElementById("profile-img").src = "default-avatar.png";
+    // ✅ Update profile card if open
+    const statusCard = document.getElementById("profile-status");
+    if (statusCard) {
+      statusCard.textContent = "🟢 Online";
+      statusCard.style.color = "green";
+    }
 
-    if (f.querySelector("#remember-me").checked) {
+    // ✅ Update avatar
+    const profileImg = document.getElementById("profile-img");
+    if (profileImg) profileImg.src = getDefaultAvatar();
+
+    if (f.querySelector("#remember-me")?.checked) {
       localStorage.setItem("rememberedUser", id);
     } else {
       localStorage.removeItem("rememberedUser");
@@ -823,25 +844,75 @@ async function handleLogIn(e) {
   }
 }
 
-/* ---------- LOG-OUT HANDLER ---------- */
+// ✅ LOG-OUT HANDLER
 function logOut() {
-  document.getElementById("profile-username").textContent = "Not signed in";
-  document.getElementById("profile-img").src = "default-avatar.png";
+  const uDisp = document.getElementById("user-display");
+  uDisp.textContent = "";
+  uDisp.style.display = "none";
 
-  const status = document.querySelector("#profile-container .status");
-  status.textContent = "🔴 Offline";
-  status.style.color = "red"; // ✅ always red
+  // ✅ Update always-visible container
+  document.getElementById("profile-username").textContent = "Not signed in";
+
+  const statusMain = document.querySelector("#profile-container .status");
+  statusMain.textContent = "🔴 Offline";
+  statusMain.style.color = "red";
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  const profileImg = document.getElementById("profile-img");
+  if (profileImg) profileImg.src = getDefaultAvatar();
+
+  // ✅ Update profile card if open
+  const statusCard = document.getElementById("profile-status");
+  if (statusCard) {
+    statusCard.textContent = "🔴 Offline";
+    statusCard.style.color = "red";
+  }
 
   localStorage.removeItem("rememberedUser");
   showWelcome();
 }
 
-/* ---------- EXPORT TO GLOBAL ---------- */
+// ✅ SHOW PROFILE PAGE
+function showProfilePage() {
+  const display = document.getElementById("user-display");
+  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+
+  const avatar = getDefaultAvatar();
+  const statusText = username === "guest" ? "🔴 Offline" : "🟢 Online";
+  const statusColor = username === "guest" ? "red" : "green";
+
+  // ✅ Sync always-visible container too
+  document.getElementById("profile-username").textContent = username;
+
+  const statusMain = document.querySelector("#profile-container .status");
+  statusMain.textContent = statusText;
+  statusMain.style.color = statusColor;
+
+  document.querySelector("#profile-container .logout-link").style.display =
+    username === "guest" ? "none" : "inline-block";
+
+  // ✅ Render profile card
+  card.innerHTML = `
+    <h1 class="title">Profile</h1>
+    <div class="profile-box">
+      <div class="profile-picture">
+        <img id="profile-img" src="${avatar}" alt="Profile Picture" style="width:100px;height:100px;object-fit:cover;">
+      </div>
+      <div class="profile-info">
+        <p id="profile-username">👤 ${username}</p>
+        <p id="profile-status" class="status">${statusText}</p>
+        <a href="#" class="logout-link" onclick="logOut()" style="display:${username === "guest" ? "none" : "inline-block"};">Log Out</a>
+      </div>
+    </div>
+  `;
+}
+
+// ✅ EXPORT TO GLOBAL
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
+window.showProfilePage = showProfilePage;
 </script>
 
 </body>
