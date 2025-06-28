@@ -749,7 +749,6 @@ function showProfilePage() {
 </script>
   
 <script>
-/* ---------- SHA-256 HASH ---------- */
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
   const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
@@ -758,18 +757,10 @@ async function sha256(str) {
     .join("");
 }
 
-/* ---------- HELPER: PICK AVATAR FOR LIGHT/DARK ---------- */
-function getDefaultAvatar() {
-  return document.body.classList.contains("dark")
-    ? "default-avatar-white.png"
-    : "default-avatar.png";
-}
-
 /* ---------- SIGN-UP HANDLER ---------- */
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
-
   if (f.password.value !== f.confirm.value) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
@@ -790,44 +781,6 @@ async function handleSignUp(e) {
   f.reset();
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
-}
-
-/* ---------- SHOW PROFILE PAGE ---------- */
-function showProfilePage() {
-  const display = document.getElementById("user-display");
-  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
-  const avatar = getDefaultAvatar();
-
-  card.innerHTML = `
-    <h1 class="title">Profile</h1>
-    <div class="profile-box" style="
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      border-radius: 10px;">
-      
-      <div style="
-        border: 4px solid #f8be2e;
-        border-radius: 50%;
-        overflow: hidden;
-        width: 100px;
-        height: 100px;">
-        <img id="profile-img" src="${avatar}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
-      </div>
-
-      <div style="
-        flex: 1;
-        min-height: 100px;
-        border: 2px dashed rgba(255, 255, 255, 0.2);
-        background: transparent;">
-        <p id="profile-username" style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
-        <p id="profile-status" class="status" style="margin: 4px 0;">🔴 Offline</p>
-        <a href="#" class="logout-link" onclick="logOut()" style="display: none; color: #ff5252; text-decoration: underline;">Log Out</a>
-      </div>
-    </div>
-  `;
 }
 
 /* ---------- LOG-IN HANDLER ---------- */
@@ -853,14 +806,13 @@ async function handleLogIn(e) {
 
     document.getElementById("profile-username").textContent = user.username;
 
-    const status = document.getElementById("profile-status");
+    const status = document.querySelector("#profile-container .status");
     status.textContent = "🟢 Online";
-    status.style.color = "green";
+    status.style.color = "green"; // ✅ always green
 
     document.querySelector("#profile-container .logout-link").style.display = "inline-block";
 
-    const img = document.getElementById("profile-img");
-    if (img) img.src = getDefaultAvatar();
+    document.getElementById("profile-img").src = "default-avatar.png";
 
     if (f.querySelector("#remember-me").checked) {
       localStorage.setItem("rememberedUser", id);
@@ -868,7 +820,7 @@ async function handleLogIn(e) {
       localStorage.removeItem("rememberedUser");
     }
 
-    setTimeout(showWelcome, 1200); // ✅ Return to home page
+    setTimeout(showWelcome, 1200);
   } else {
     msg.style.display = "none";
     err.style.display = "block";
@@ -878,25 +830,22 @@ async function handleLogIn(e) {
 /* ---------- LOG-OUT HANDLER ---------- */
 function logOut() {
   document.getElementById("profile-username").textContent = "Not signed in";
+  document.getElementById("profile-img").src = "default-avatar.png";
 
-  const img = document.getElementById("profile-img");
-  if (img) img.src = getDefaultAvatar();
-
-  const status = document.getElementById("profile-status");
+  const status = document.querySelector("#profile-container .status");
   status.textContent = "🔴 Offline";
-  status.style.color = "red";
+  status.style.color = "red"; // ✅ always red
 
   document.querySelector("#profile-container .logout-link").style.display = "none";
 
   localStorage.removeItem("rememberedUser");
-  showWelcome(); // ✅ Return to home page
+  showWelcome();
 }
 
 /* ---------- EXPORT TO GLOBAL ---------- */
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
-window.showProfilePage = showProfilePage;
 </script>
 
 </body>
