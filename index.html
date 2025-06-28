@@ -661,13 +661,6 @@ function showProfilePage() {
   const display = document.getElementById("user-display");
   const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
 
-  // Determine status
-  const isLoggedIn = username !== "guest" && username !== "Not signed in";
-  const statusText = isLoggedIn ? "🟢 Online" : "🔴 Offline";
-  const statusColor = isLoggedIn
-    ? (document.body.classList.contains("dark") ? "" : "green")
-    : "red";
-
   card.innerHTML = `
     <h1 class="title">Profile</h1>
     <div class="profile-box" style="
@@ -684,7 +677,7 @@ function showProfilePage() {
         overflow: hidden;
         width: 100px;
         height: 100px;">
-        <img src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
+        <img id="profile-img" src="${document.getElementById("profile-img").src}" alt="Profile Picture" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
 
       <div style="
@@ -693,27 +686,25 @@ function showProfilePage() {
         border: 2px dashed rgba(255, 255, 255, 0.2);
         background: transparent;">
         <!-- More profile details here -->
+        <p id="profile-username" style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
+        <p id="profile-status" class="status" style="margin: 4px 0;">🔴 Offline</p>
+        <a href="#" class="logout-link" onclick="logOut()" style="display: none; color: #ff5252; text-decoration: underline;">Log Out</a>
       </div>
-    </div>
-
-    <div style="margin-top: 20px; text-align: right;">
-      <p style="margin: 4px 0; font-weight: bold;">👤 ${username}</p>
-      <p class="status" style="margin: 4px 0; color: ${statusColor};">${statusText}</p>
-      ${isLoggedIn ? `<a href="#" onclick="logOut()" style="color: #ff5252; text-decoration: underline;">Log Out</a>` : ""}
     </div>
   `;
 }
 
-window.showProfilePage = showProfilePage;
-window.logOut = logOut;
-showWelcome();
-window.showSettings = showSettings;
-window.showLogInForm = showLogInForm;
-window.showSignUpForm = showSignUpForm;
-window.showWelcome = showWelcome;
-window.startQuiz = startQuiz;
-window.saveToLeaderboard = saveToLeaderboard;
-window.showLeaderboard = showLeaderboard;
+  window.showProfilePage = showProfilePage;
+  window.logOut = logOut;
+  showWelcome();
+  window.showSettings = showSettings;
+  window.showLogInForm = showLogInForm;
+  window.showSignUpForm = showSignUpForm;
+  window.showWelcome = showWelcome;
+  window.startQuiz = startQuiz;
+  window.saveToLeaderboard = saveToLeaderboard;
+  window.showLeaderboard = showLeaderboard;
+</script>
   
 <script>
 async function sha256(str) {
