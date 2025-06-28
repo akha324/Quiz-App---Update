@@ -662,7 +662,6 @@ function saveToLeaderboard() {
   </script>
 </body>
   
-
 <script>
 async function sha256(str) {
   const buf = new TextEncoder().encode(str);
@@ -788,6 +787,20 @@ function logOut() {
 window.handleSignUp = handleSignUp;
 window.handleLogIn = handleLogIn;
 window.logOut = logOut;
+
+/* ---------- AUTO-FILL IDENTIFIER IF REMEMBERED ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  const remembered = localStorage.getItem("rememberedUser");
+  if (remembered) {
+    const identifierInput = document.querySelector("#login-form input[name='identifier']");
+    if (identifierInput) {
+      identifierInput.value = remembered;
+    }
+  }
+
+  // ✅ Always show Welcome screen when entering site
+  showWelcome();
+});
 </script>
 
 </body>
