@@ -26,34 +26,27 @@ if (!localStorage.getItem("localUsers")) {
 async function handleSignUp(e) {
   e.preventDefault();
   const f = e.target;
-  if (f.password.value !== f.confirm.value) {
+  if (f.password.value !== f.confirm.value || !f.querySelector("#agree-terms")?.checked) {
     card.querySelector("#signup-err").style.display = "block";
     card.querySelector("#signup-ok").style.display = "none";
     return;
   }
 
-  // ✅ Hash the password
   const hash = await sha256(f.password.value);
-
-  // ✅ Get existing users
   const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
-
-  // ✅ Add the new user
   localUsers.push({
     username: f.username.value.trim().toLowerCase(),
     email: f.email.value.trim().toLowerCase(),
     password: hash
   });
-
-  // ✅ Save back to localStorage
   localStorage.setItem("localUsers", JSON.stringify(localUsers));
 
   f.reset();
+  card.querySelector("#signup-ok").textContent = "✅ Account created!";
   card.querySelector("#signup-ok").style.display = "block";
   card.querySelector("#signup-err").style.display = "none";
 }
 
-// ✅ Handle Log In (local only for offline fallback)
 async function handleLogIn(e) {
   e.preventDefault();
   const f = e.target;
@@ -61,16 +54,14 @@ async function handleLogIn(e) {
   const pw = f.password.value;
 
   const hash = await sha256(pw);
-
   const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
   const user = users.find(u =>
-    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
-    u.password === hash
+    (u.username === id || u.email === id) && u.password === hash
   );
 
   const msg = card.querySelector("#login-message");
-  const err = card.querySelector("#login-error"); // ✅ fix the ID here!
+  const err = card.querySelector("#login-error"); // ✅ must match the buildLoginForm ID!
 
   if (user) {
     msg.style.display = "block";
@@ -112,7 +103,6 @@ function buildSignupForm() {
   card.querySelector("#signup-form").addEventListener("submit", handleSignUp);
 }
 
-// ✅ Build Log In form
 function buildLoginForm() {
   card.innerHTML = `
     ${backBtn()}
@@ -124,7 +114,7 @@ function buildLoginForm() {
       <button type="submit" class="start">Log In</button>
     </form>
     <div id="login-message" style="display:none;color:#4caf50;margin-top:12px">✅ Logged in successfully!</div>
-    <div id="login-err" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
+    <div id="login-error" style="display:none;color:#f44336;margin-top:12px">❌ Invalid credentials.</div>
   `;
   card.querySelector("#login-form").addEventListener("submit", handleLogIn);
 }
