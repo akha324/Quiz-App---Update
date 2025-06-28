@@ -76,10 +76,6 @@
   <button class="sign-up-btn" onclick="showLeaderboard()">Leaderboard</button>
   <button class="sign-up-btn" onclick="showLogInForm()">Log In</button>
   <button class="sign-up-btn" onclick="showSignUpForm()">Sign Up</button>
-  <button class="sign-up-btn" onclick="showProfilePage()">Profile</button>
-  <button class="tab-btn start" onclick="showProfileTab('profile-info')">Profile Info</button>
-  <button class="tab-btn start" onclick="showProfileTab('play-history')">Play History</button>
-  <button class="tab-btn start" onclick="showProfileTab('avatar-change')">Change Avatar</button>
   <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
 </div>
 
@@ -905,13 +901,6 @@ function showTab(tabId) {
   document.querySelectorAll(".tab-btn")[index].classList.add("active");
 }
 
-<script>
-  function showProfileTab(tabId) {
-    showProfilePage();
-    showTab(tabId);
-  }
-</script>    
-    
 /* ---------- HOOK PROFILE PICTURE CLICK ---------- */
 document.getElementById("profile-img").onclick = showProfilePage;
 
