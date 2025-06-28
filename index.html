@@ -526,19 +526,6 @@ function logOut() {
         <p class="subtitle" style="margin-bottom:28px">You've answered every question available.<br>Please return to the home page</p>
         <button class="btn-home" onclick="showWelcome()">Go Home</button>`;
     }
-    
-function buildResult() {
-  card.innerHTML = `
-    <h2>Quiz Complete!</h2>
-    <p class="score">${score} / ${settings.numQuestions}</p>
-    <div class="btn-group">
-      <button class="retry" onclick="startQuiz()">Try Again</button>
-      <button class="btn-home" onclick="showWelcome()">Go Home</button>
-      <button class="retry" onclick="saveToLeaderboard()">Save to Leaderboard</button>
-      <button class="btn-home" onclick="shareToSocial()">📤 Share to Social Media</button>
-    </div>
-  `;
-}
 
 function shareToSocial() {
   const quizResult = `I scored ${score} out of ${settings.numQuestions} on QuizApp!`;
