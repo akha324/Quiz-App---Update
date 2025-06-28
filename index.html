@@ -339,15 +339,18 @@ function showLogInForm() {
 
 async function handleLogIn(e) {
   e.preventDefault();
+
   const f = e.target;
   const id = f.identifier.value.trim().toLowerCase();
   const pw = f.password.value;
 
+  // ✅ Hash the typed password
   const hash = await sha256(pw);
 
-  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+  // ✅ Always read users from localStorage
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
 
-  const user = users.find(u =>
+  const user = localUsers.find(u =>
     (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
     u.password === hash
   );
@@ -356,21 +359,26 @@ async function handleLogIn(e) {
   const err = card.querySelector("#login-err");
 
   if (user) {
+    // ✅ Show success message
     msg.style.display = "block";
     err.style.display = "none";
 
+    // ✅ Update user display
     const uDisp = document.getElementById("user-display");
     uDisp.textContent = `👤 ${user.username}`;
     uDisp.style.display = "block";
 
+    // ✅ Remember user if checkbox checked
     if (f.querySelector("#remember-me")?.checked) {
       localStorage.setItem("rememberedUser", id);
     } else {
       localStorage.removeItem("rememberedUser");
     }
 
+    // ✅ Return to welcome
     setTimeout(showWelcome, 1200);
   } else {
+    // ❌ Show error
     msg.style.display = "none";
     err.style.display = "block";
   }
