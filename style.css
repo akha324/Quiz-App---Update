@@ -467,13 +467,34 @@ body:not(.dark) #profile-container .logout-link {
 
 .settings-section {
   margin-top: 40px;
-  margin-bottom: 40px; /* More space below category select */
+  margin-bottom: 40px;
 }
 
 .settings-footer {
-  margin-top: 60px; /* Push Light/Dark mode buttons closer to bottom */
+  margin-top: 60px;
 }
 
 .settings-footer button {
-  margin-top: 12px; /* Optional: consistent vertical spacing */
+  margin-top: 12px;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+}
+
+.button-group .start {
+  margin-right: 12px;
+}
+
+.button-group .start:last-child {
+  margin-right: 0;
+}
+
+#profile-container .status {
+  color: red;
+}
+
+body:not(.dark) #profile-container .status {
+  color: red !important;
 }
