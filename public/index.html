@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuizApp</title>
+
+  <meta name="description"  content="Interactive quiz app to test your knowledge and sharpen your mind." />
+  <meta name="author"       content="Ashiq" />
+  <meta name="theme-color"  content="#000000" />
+
+  <link rel="stylesheet"    href="style.css" />
+  <link rel="icon"          href="favicon.ico" type="image/x-icon" />
+  <link rel="preconnect"    href="https://fonts.googleapis.com" />
+  <link rel="preconnect"    href="https://fonts.gstatic.com" crossorigin />
+
+  <style>
+    /* background-video visibility */
+    .bg-video{display:none}
+    body:not(.dark) .bg-video.day{display:block}
+    body.dark .bg-video.night{display:block}
+
+    /* keep the checkbox compact */
+    input[type="checkbox"]{
+      width:auto;padding:0;border:none;vertical-align:middle;accent-color:#f8be2e;
+    }
+
+    /* terms-checkbox colour tweaks (light mode only) */
+    body:not(.dark) .signup-form .terms-check{color:#fff;}
+    body:not(.dark) .signup-form .terms-check a{
+      color:#03a9f4 !important;
+      text-decoration:underline;
+    }
+
+    /* make “Remember Me” white in light mode */
+    body:not(.dark) .login-form label{color:#fff;}
+
+    /* one-liner for Remember-Me + Forgot-Password */
+    .login-extra{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:8px;margin:-10px 0 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- background videos -->
+  <video class="bg-video day" autoplay muted loop playsinline>
+    <source src="https://dl.dropboxusercontent.com/scl/fi/qa6n40ou8ozsnl5yqo25p/day.mov?rlkey=bi8bjxgxd84wijq042e8motg5&raw=1" type="video/mp4">
+  </video>
+  <video class="bg-video night" autoplay muted loop playsinline>
+    <source src="https://dl.dropboxusercontent.com/scl/fi/fih4occpuwk69gjvumiup/night.mov?rlkey=fvxouktmp8agki9i6g24c538y&raw=1" type="video/mp4">
+  </video>
+
+  <!-- overlay & top bar -->
+  <div class="overlay" aria-hidden="true"></div>
+<!-- Always-visible Profile Container -->
+<div id="profile-container">
+  <div class="profile-picture">
+    <img id="profile-img" src="default-avatar.png" alt="Profile Picture">
+  </div>
+  <div class="profile-info">
+    <p id="profile-username">Not signed in</p>
+    <p class="status">🔴 Offline</p>
+    <a href="#" onclick="logOut()" class="logout-link" style="display:none;">Log Out</a>
+  </div>
+</div>
+
+  <!-- username display (initially hidden) -->
+
+<div id="user-display" class="user-display" style="display:none;"></div>
+
+<!-- top navigation buttons -->
+<div class="top-buttons">
+  <button class="sign-up-btn" onclick="showSettings()">Settings</button>
+  <button class="sign-up-btn" onclick="showLeaderboard()">Leaderboard</button>
+  <button class="sign-up-btn" onclick="showLogInForm()">Log In</button>
+  <button class="sign-up-btn" onclick="showSignUpForm()">Sign Up</button>
+  <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+</div>
+
+  <!-- main card -->
+  <main id="main-card" class="card" role="main" aria-live="polite"></main>
+
+  <noscript>
+    <style>body{display:block;padding:2rem;background:#111;color:#fff}.card{display:none}</style>
+    <p>This app requires JavaScript. Please enable it in your browser.</p>
+  </noscript>
+
+  <!-- ==================== SCRIPT ==================== -->
+  <script>
+    /* ---------- USER-ADJUSTABLE QUIZ SETTINGS ---------- */
+    const settings={numQuestions:10,timerOn:false,timePerQuestion:15};
+
+    /* ---------- THEME TOGGLE ---------- */
+    const btnT=document.getElementById("theme-toggle");
+    function applyTheme(d){
+      document.body.classList.toggle("dark",d);
+      btnT.textContent=d?"☀️":"🌙";
+      localStorage.setItem("theme",d?"dark":"light");
+    }
+    applyTheme(localStorage.getItem("theme")==="dark"||
+               (!localStorage.getItem("theme")&&matchMedia("(prefers-color-scheme: dark)").matches));
+    btnT.addEventListener("click",()=>applyTheme(!document.body.classList.contains("dark")));
+
+ /* ---------- QUIZ BASICS ---------- */
+    const QUESTIONS_URL="https://dl.dropboxusercontent.com/scl/fi/zfe372bfs9q6qr7lyd9c1/questions.json?rlkey=brrb96o7zbz57k17pofh4w3r8&raw=1";
+    const card=document.getElementById("main-card");
+    let allQuestions=[],pool=[],current=[],idx=0,score=0;
+    const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}};
+
+async function loadQuestions(amount = 10, category = "any") {
+  const catParam = category !== "any" ? `&category=${category}` : "";
+  const apiURL = `https://opentdb.com/api.php?amount=${amount}${catParam}&type=multiple`;
+
+  const res = await fetch(apiURL);
+  const data = await res.json();
+  if (data.response_code !== 0 || !Array.isArray(data.results) || data.results.length === 0) {
+    throw new Error("Failed to load questions");
+  }
+
+  const decoded = str => new DOMParser().parseFromString(str, "text/html").body.textContent || "";
+  allQuestions = data.results.map(q => {
+    const choices = [...q.incorrect_answers.map(decoded)];
+    const answerText = decoded(q.correct_answer);
+    const answerIndex = Math.floor(Math.random() * (choices.length + 1));
+    choices.splice(answerIndex, 0, answerText);
+    return {
+      question: decoded(q.question),
+      choices,
+      answer: answerIndex
+    };
+  });
+
+  shuffle(allQuestions);
+  pool = [...allQuestions];
+}
+
+    /* ---------- WELCOME ---------- */
+    function showWelcome(){
+      card.innerHTML=`
+        <h1 class="title">Welcome to <span class="brand">QuizApp</span></h1>
+        <p class="subtitle">Test your knowledge • Sharpen your mind • Have fun</p>
+        <button class="start" onclick="startQuiz()">Start Quiz</button>`;
+    }
+
+function showSettings() {
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">Settings</h1>
+    <p style="margin-bottom:18px;">Customize your experience</p>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Number&nbsp;of&nbsp;Questions
+      <input id="set-qcount" type="number" min="1" value="${settings.numQuestions}" style="width:70px;padding:4px;">
+    </label>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      Enable&nbsp;Timer
+      <input id="set-timer-toggle" type="checkbox" ${settings.timerOn ? 'checked' : ''}>
+    </label>
+
+    <label style="display:flex;justify-content:space-between;align-items:center;margin-bottom:26px;">
+      Seconds&nbsp;Per&nbsp;Question
+      <input id="set-qtime" type="number" min="5" max="300" value="${settings.timePerQuestion}"
+             style="width:70px;padding:4px;" ${settings.timerOn ? '' : 'disabled'}>
+    </label>
+
+    <div class="settings-section" style="margin-bottom:26px;">
+      <label for="category-select" style="font-weight:600;display:block;margin-bottom:6px;">Select Category:</label>
+      <select id="category-select" style="padding:6px;border-radius:6px;font-size:0.95rem;width:100%;max-width:400px;">
+        <option value="any">Any Category</option>
+        <option value="9">General Knowledge</option>
+        <option value="10">Entertainment: Books</option>
+        <option value="11">Entertainment: Film</option>
+        <option value="12">Entertainment: Music</option>
+        <option value="13">Entertainment: Musicals & Theatres</option>
+        <option value="14">Entertainment: Television</option>
+        <option value="15">Entertainment: Video Games</option>
+        <option value="16">Entertainment: Board Games</option>
+        <option value="17">Science & Nature</option>
+        <option value="18">Science: Computers</option>
+        <option value="19">Science: Mathematics</option>
+        <option value="20">Mythology</option>
+        <option value="21">Sports</option>
+        <option value="22">Geography</option>
+        <option value="23">History</option>
+        <option value="24">Politics</option>
+        <option value="25">Art</option>
+        <option value="26">Celebrities</option>
+        <option value="27">Animals</option>
+        <option value="28">Vehicles</option>
+        <option value="29">Entertainment: Comics</option>
+        <option value="30">Science: Gadgets</option>
+        <option value="31">Entertainment: Japanese Anime & Manga</option>
+        <option value="32">Entertainment: Cartoon & Animations</option>
+      </select>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:100px;">
+      <button class="start" onclick="applyTheme(false)">Light Mode</button>
+      <button class="start" onclick="applyTheme(true)">Dark Mode</button>
+    </div>`;
+
+  const qCount = card.querySelector('#set-qcount');
+  const timerChk = card.querySelector('#set-timer-toggle');
+  const qTime = card.querySelector('#set-qtime');
+  const categorySelect = card.querySelector('#category-select');
+
+  qCount.oninput = e => settings.numQuestions = Math.max(1, +e.target.value);
+  timerChk.onchange = e => {
+    settings.timerOn = e.target.checked;
+    qTime.disabled = !settings.timerOn;
+  };
+  qTime.oninput = e => settings.timePerQuestion = Math.max(5, +e.target.value);
+  categorySelect.onchange = e => settings.category = e.target.value;
+}
+
+function startQuiz() {
+  const category = settings.category || "any";
+  const categoryParam = category !== "any" ? `&category=${category}` : "";
+
+  const apiURL = `https://opentdb.com/api.php?amount=${settings.numQuestions}${categoryParam}&type=multiple`;
+
+  fetch(apiURL)
+    .then(res => res.json())
+    .then(data => {
+      if (data.response_code !== 0 || !Array.isArray(data.results)) {
+        throw new Error("Failed to load questions");
+      }
+
+      if (data.results.length === 0) {
+        throw new Error("No questions available for this category.");
+      }
+
+      questions = data.results.map(q => {
+        const choices = [...q.incorrect_answers.map(decodeHTMLEntities)];
+        const answerText = decodeHTMLEntities(q.correct_answer);
+        const answerIndex = Math.floor(Math.random() * (choices.length + 1));
+        choices.splice(answerIndex, 0, answerText);
+        return {
+          question: decodeHTMLEntities(q.question),
+          choices,
+          answer: answerIndex
+        };
+      });
+
+      currentQuestion = 0;
+      score = 0;
+      showQuestion();
+    })
+    .catch(err => {
+      card.innerHTML = `<h2 class="title">❌ ${err.message}</h2>`;
+    });
+}
+
+    /* ---------- SIGN-UP ---------- */
+    const users=[
+      {username:"ashiq",email:"ashiq@example.com",password:"pass123"},
+      {username:"guest",email:"guest@demo.com",password:"guestpass"}
+    ];
+
+    function backBtn(){
+      return `<button class="back-arrow" onclick="showWelcome()">
+                <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>`;
+    }
+
+    function showSignUpForm(){
+      card.innerHTML=`
+        ${backBtn()}
+        <h1 class="title">Create Account</h1>
+        <form id="signup-form" class="signup-form">
+          <input class="cut-corner-input" name="username" type="text"     placeholder="Username" required />
+          <input class="cut-corner-input" name="email"    type="email"    placeholder="Email"    required />
+          <input class="cut-corner-input" name="password" type="password" placeholder="Password" required />
+          <input class="cut-corner-input" name="confirm"  type="password" placeholder="Confirm Password" required />
+
+          <label class="terms-check" style="margin-top:-6px">
+            <input type="checkbox" name="agree" required>
+            I&nbsp;agree&nbsp;to&nbsp<a href="#" id="terms-link">Terms&nbsp;and&nbsp;Services</a>
+          </label>
+
+          <button class="start" type="submit">Create Account</button>
+        </form>
+        <p id="signup-ok"  style="display:none;margin-top:18px;color:#4caf50">✅ Account created!</p>
+        <p id="signup-err" style="display:none;margin-top:18px;color:#f44336">❌ Passwords do not match.</p>`;
+      card.querySelector("#signup-form").onsubmit=handleSignUp;
+      card.querySelector("#terms-link").onclick=e=>{e.preventDefault();showTermsPage();};
+    }
+    window.showSignUpForm = showSignUpForm;
+
+    function handleSignUp(e){
+      e.preventDefault();
+      const f=e.target;
+      if(f.password.value!==f.confirm.value){
+        card.querySelector("#signup-err").style.display="block";
+        card.querySelector("#signup-ok").style.display="none";
+        return;
+      }
+      users.push({username:f.username.value.trim().toLowerCase(),
+                  email:f.email.value.trim().toLowerCase(),
+                  password:f.password.value});
+      f.reset();
+      card.querySelector("#signup-ok").style.display="block";
+      card.querySelector("#signup-err").style.display="none";
+    }
+
+    /* ---------- LOG-IN ---------- */
+function showLogInForm() {
+  card.innerHTML = `
+    ${backBtn()}
+    <h1 class="title">Log In</h1>
+    <form id="login-form" class="login-form">
+      <input class="cut-corner-input" name="identifier" type="text" placeholder="Username or Email" required />
+      <input class="cut-corner-input" name="password" type="password" placeholder="Password" required />
+      <div class="login-extra">
+        <label class="remember-label" style="display:flex;align-items:center;gap:8px;font-size:.9rem;">
+          <input type="checkbox" id="remember-me" /> Remember Me
+        </label>
+        <a href="#" id="forgot-link" style="color:#ffca28;text-decoration:underline;font-size:.9rem">Forgot Password?</a>
+      </div>
+      <button class="start" type="submit">Log In</button>
+    </form>
+    <p id="login-message" style="display:none;margin-top:18px;color:#4caf50">✅ Welcome back!</p>
+    <p id="login-error" style="display:none;margin-top:18px;color:#f44336">❌ Login failed. Please try again.</p>`;
+
+  const saved = localStorage.getItem("rememberedUser");
+  if (saved) card.querySelector("input[name='identifier']").value = saved;
+
+  card.querySelector("#login-form").onsubmit = handleLogIn;
+  card.querySelector("#forgot-link").onclick = e => {
+    e.preventDefault();
+    showResetForm();
+  };
+}
+
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+
+  // ✅ If you use hashing, hash the input password
+  const hash = await sha256(pw);
+
+  // ✅ Always read from localStorage!
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
+    u.password === hash  // compare hashed version
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
+
+    if (f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+    
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+
+  // ✅ If you use hashing, hash the input password
+  const hash = await sha256(pw);
+
+  // ✅ Always read from localStorage!
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username.toLowerCase() === id || u.email.toLowerCase() === id) &&
+    u.password === hash  // compare hashed version
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    const uDisp = document.getElementById("user-display");
+    uDisp.textContent = `👤 ${user.username}`;
+    uDisp.style.display = "block";
+
+    if (f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+function logOut() {
+  const display = document.getElementById("user-display");
+  display.textContent = "";
+  display.style.display = "none";
+
+  // ✅ Clear profile container back to default
+  document.getElementById("profile-username").textContent = "Not signed in";
+  document.getElementById("profile-img").src = "https://via.placeholder.com/80";
+  document.querySelector("#profile-container .status").textContent = "🔴 Offline";
+  document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  localStorage.removeItem("rememberedUser");
+  showWelcome();
+}
+
+    /* ---------- RESET PASSWORD ---------- */
+    function showResetForm(){
+      card.innerHTML=`
+        ${backBtn()}
+        <h1 class="title">Reset Password</h1>
+        <form id="reset-form" class="signup-form">
+          <input class="cut-corner-input" name="email" type="email" placeholder="Enter your registered email" required />
+          <button class="start" type="submit">Send Reset Link</button>
+        </form>
+        <p id="reset-msg" style="display:none;margin-top:18px;color:#4caf50">
+          📧 If the email exists in our system, a reset link has been sent.
+        </p>`;
+      card.querySelector("#reset-form").onsubmit=e=>{
+        e.preventDefault();
+        e.target.reset();
+        card.querySelector("#reset-msg").style.display="block";
+      };
+    }
+
+    /* ---------- TERMS PAGE ---------- */
+    function showTermsPage(){
+      card.innerHTML = `
+    <button class="back-arrow" onclick="showSignUpForm()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">Terms &amp; Services</h1>
+    <div class="terms-container">
+      <p>By using QuizApp, you agree to the following:</p>
+      <ul>
+        <li><strong>Age Requirement:</strong> You are at least 13 years old or have guardian consent.</li>
+        <li><strong>Respectful Conduct:</strong> All content must be appropriate and respectful.</li>
+        <li><strong>Data Usage:</strong> Your data is used only for account-related functionality.</li>
+        <li><strong>Privacy Commitment:</strong> No personal data is shared or sold to third parties.</li>
+        <li><strong>Disclaimer:</strong> QuizApp is provided as-is without warranty.</li>
+      </ul>
+      <p>Last updated: June 21, 2025</p>
+    </div>`;
+    }
+
+    /* ---------- QUIZ FLOW ---------- */
+    let timerId=null;
+    const extractOpts=q=>Array.isArray(q.choices)?q.choices:
+      Array.isArray(q.answers)?q.answers:
+      Object.keys(q).filter(k=>/^[A-D]$/i.test(k)).sort().map(k=>({key:k,text:q[k]}));
+    const correctIndex=(q,o)=>typeof q.answer==="number"?q.answer:
+      typeof o[0]==="string"?["A","B","C","D"].indexOf((q.answer||q.correct||q.correct_answer||"").toUpperCase()):
+      o.findIndex(a=>a.key===(q.answer||q.correct||q.correct_answer));
+
+    function buildError(msg){card.innerHTML=`<h2>⚠️ Failed to Load Quiz</h2><p>${msg}</p><button class="retry" onclick="showWelcome()">💙 Back</button>`}
+
+    function buildQuestion(){
+      const q=current[idx];let opts=extractOpts(q),corr=correctIndex(q,opts);
+      if(!opts.length) return buildError("Question has no options");
+      if(typeof opts[0]!=="string") opts=opts.map(o=>`${o.key}: ${o.text}`);
+
+      let timerHTML=settings.timerOn
+        ? `<div id="quiz-timer" style="font-weight:bold;font-size:1.1rem;margin-bottom:12px;text-align:center;"></div>`
+        : "";
+
+      card.innerHTML=`
+        ${timerHTML}
+        <h2>Question ${idx+1} of ${settings.numQuestions}</h2>
+        <p>${q.question||"Untitled question"}</p>
+        <div id="choices">${opts.map((t,i)=>`<button class="choice-btn" data-i="${i}">${t}</button>`).join("")}</div>`;
+
+      const btns=[...card.querySelectorAll(".choice-btn")];
+      let countdown=settings.timePerQuestion;
+      const timerDisplay=document.getElementById("quiz-timer");
+
+      if(settings.timerOn && timerDisplay){
+        timerDisplay.textContent=`⏱️ Time left: ${countdown}s`;
+        timerId=setInterval(()=>{
+          countdown--;
+          if(countdown<=0){
+            clearInterval(timerId);
+            btns.forEach(x=>x.disabled=true);
+            if(corr>=0) btns[corr].classList.add("correct");
+            setTimeout(()=>++idx<settings.numQuestions?buildQuestion():buildResult(),1500);
+          }else{
+            timerDisplay.textContent=`⏱️ Time left: ${countdown}s`;
+          }
+        },1000);
+      }
+
+      btns.forEach(b=>b.onclick=e=>{
+        if(timerId) clearInterval(timerId);
+        btns.forEach(x=>x.disabled=true);
+        const sel=+e.target.dataset.i;
+        if(sel===corr){e.target.classList.add("correct");score++}
+        else{e.target.classList.add("wrong");corr>=0&&btns[corr].classList.add("correct")}
+        setTimeout(()=>++idx<settings.numQuestions?buildQuestion():buildResult(),1500);
+      });
+    }
+
+ function buildResult(){
+  // Send score to server
+  fetch('/api/score', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: document.getElementById("user-display").textContent.replace("👤 ","") || "guest",
+      score,
+      total: settings.numQuestions,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(err => console.warn("Failed to save score:", err));
+
+  card.innerHTML=`
+    <h2>Quiz Complete!</h2>
+    <p class="score">${score} / ${settings.numQuestions}</p>
+    <div class="btn-group">
+      <button class="retry" onclick="startQuiz()">Try Again</button>
+      <button class="btn-home" onclick="showWelcome()">Go Home</button>
+    </div>`;
+}
+
+    function showOutOfQuestions(){
+      card.innerHTML=`
+        <h2 class="title">Out of Questions</h2>
+        <p class="subtitle" style="margin-bottom:28px">You've answered every question available.<br>Please return to the home page</p>
+        <button class="btn-home" onclick="showWelcome()">Go Home</button>`;
+    }
+    
+function buildResult() {
+  card.innerHTML = `
+    <h2>Quiz Complete!</h2>
+    <p class="score">${score} / ${settings.numQuestions}</p>
+    <div class="btn-group">
+      <button class="retry" onclick="startQuiz()">Try Again</button>
+      <button class="btn-home" onclick="showWelcome()">Go Home</button>
+      <button class="retry" onclick="saveToLeaderboard()">Save to Leaderboard</button>
+      <button class="btn-home" onclick="shareToSocial()">📤 Share to Social Media</button>
+    </div>
+  `;
+}
+
+function shareToSocial() {
+  const quizResult = `I scored ${score} out of ${settings.numQuestions} on QuizApp!`;
+  const url = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent(quizResult);
+
+  card.innerHTML = `
+    <h2>Share your score!</h2>
+    <p style="margin-bottom:20px;">Pick a platform:</p>
+    <div style="display:flex;justify-content:center;gap:30px;">
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg" alt="Facebook" width="60" height="60" style="display:block;">
+      </a>
+      <a href="https://twitter.com/intent/tweet?url=${url}&text=${text}" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6f/Logo_of_Twitter.svg" alt="Twitter" width="60" height="60" style="display:block;">
+      </a>
+      <a href="https://www.snapchat.com/submit?url=${url}" target="_blank">
+        <img src="snapchat-logo.png" alt="Snapchat" width="60" height="60" style="display:block;object-fit:contain;background:#FFFC00;border-radius:12px;">
+      </a>
+      <a href="https://www.instagram.com/" target="_blank">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" width="60" height="60" style="display:block;">
+      </a>
+    </div>
+    <div style="margin-top:40px;">
+      <button class="btn-home" onclick="showWelcome()">Go Home</button>
+    </div>
+  `;
+}
+    
+async function startQuiz() {
+  try {
+    const category = settings.category || "any";
+    await loadQuestions(settings.numQuestions, category);
+
+    if (pool.length === 0) return showOutOfQuestions();
+
+    const available = Math.min(settings.numQuestions, pool.length);
+    idx = score = 0;
+    current = pool.splice(0, available);
+    settings.numQuestions = available; // temporarily update
+    buildQuestion();
+  } catch (err) {
+    buildError(err.message);
+  }
+}
+
+function showLeaderboard() {
+  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  scores.sort((a, b) => b.score - a.score);
+  const top10 = scores.slice(0, 10);
+
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1 class="title">🏆 Leaderboard</h1>
+    <p class="subtitle">Top 10 Scores</p>
+    <div class="leaderboard-box">
+      <ol class="leaderboard-list">
+        ${top10.map((entry, i) => `
+          <li class="leaderboard-entry">
+            <span class="rank">#${i + 1}</span>
+            <span class="user">${entry.username}</span>
+            <span class="score">${entry.score}/${entry.total}</span>
+            <span class="timestamp">${new Date(entry.timestamp).toLocaleString()}</span>
+          </li>
+        `).join("")}
+      </ol>
+    </div>`;
+}
+    
+function saveToLeaderboard() {
+  const display = document.getElementById("user-display");
+  const username = (display && display.textContent.replace("👤 ", "").trim()) || "guest";
+
+  const scoreData = {
+    username,
+    score,
+    total: settings.numQuestions,
+    timestamp: new Date().toISOString()
+  };
+
+  const local = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+  local.push(scoreData);
+  localStorage.setItem("localLeaderboard", JSON.stringify(local));
+
+  alert("✅ Score saved to leaderboard!");
+}
+
+  </script>
+</body>
+  <script>
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", buf);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/* ---------- SIGN-UP HANDLER ---------- */
+async function handleSignUp(e) {
+  e.preventDefault();
+  const f = e.target;
+
+  if (f.password.value !== f.confirm.value) {
+    card.querySelector("#signup-err").style.display = "block";
+    card.querySelector("#signup-ok").style.display = "none";
+    return;
+  }
+
+  const hash = await sha256(f.password.value);
+  const localUsers = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  localUsers.push({
+    username: f.username.value.trim().toLowerCase(),
+    email: f.email.value.trim().toLowerCase(),
+    password: hash
+  });
+
+  localStorage.setItem("localUsers", JSON.stringify(localUsers));
+
+  f.reset();
+  card.querySelector("#signup-ok").style.display = "block";
+  card.querySelector("#signup-err").style.display = "none";
+}
+
+/* ---------- LOG-IN HANDLER ---------- */
+async function handleLogIn(e) {
+  e.preventDefault();
+  const f = e.target;
+  const id = f.identifier.value.trim().toLowerCase();
+  const pw = f.password.value;
+  const hash = await sha256(pw);
+  const users = JSON.parse(localStorage.getItem("localUsers") || "[]");
+
+  const user = users.find(u =>
+    (u.username === id || u.email === id) &&
+    u.password === hash
+  );
+
+  const msg = card.querySelector("#login-message");
+  const err = card.querySelector("#login-error");
+
+  if (user) {
+    msg.style.display = "block";
+    err.style.display = "none";
+
+    document.getElementById("profile-username").textContent = user.username;
+
+    const status = document.querySelector("#profile-container .status");
+    status.textContent = "🟢 Online";
+    status.classList.add("online");
+    status.style.color = "green";
+
+    document.querySelector("#profile-container .logout-link").style.display = "inline-block";
+
+    const profileImg = document.getElementById("profile-img");
+    if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
+    } else {
+      profileImg.src = "default-avatar.png";
+    }
+
+    const display = document.getElementById("user-display");
+    if (display) {
+      display.style.display = "none";
+    }
+
+    if (f.querySelector("#remember-me") && f.querySelector("#remember-me").checked) {
+      localStorage.setItem("rememberedUser", id);
+    } else {
+      localStorage.removeItem("rememberedUser");
+    }
+
+    setTimeout(showWelcome, 1200);
+  } else {
+    msg.style.display = "none";
+    err.style.display = "block";
+  }
+}
+
+/* ---------- LOG-OUT HANDLER ---------- */
+function logOut() {
+  document.getElementById("profile-username").textContent = "Not signed in";
+
+  const profileImg = document.getElementById("profile-img");
+  if (document.body.classList.contains("light")) {
+    profileImg.src = "default-avatar.png";
+  }
+  if (document.body.classList.contains("dark")) {
+    profileImg.src = "default-avatar-white.png";
+  }
+
+  const status = document.querySelector("#profile-container .status");
+  status.textContent = "🔴 Offline";
+  status.classList.remove("online");
+  status.style.color = "red";
+
+  document.querySelector("#profile-container .logout-link").style.display = "none";
+
+  localStorage.removeItem("rememberedUser");
+
+  const display = document.getElementById("user-display");
+  if (display) {
+    display.style.display = "none";
+  }
+
+  showWelcome();
+}
+
+function showProfilePage() {
+  const username = document.getElementById("profile-username").textContent || "Not signed in";
+  const avatar = document.getElementById("profile-img").src;
+
+  let scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+
+  // 👉 If the user is signed in, ensure their scores are tracked
+  if (username !== "Not signed in") {
+    // Check if the user already has an entry
+    const userHasScores = scores.some(s => s.username === username);
+    if (!userHasScores) {
+      // Add a default entry for this user if missing
+      scores.push({
+        username: username,
+        score: 0,
+        total: 0,
+        timestamp: new Date().toISOString(),
+        subject: "General"
+      });
+      // Save it back to localStorage
+      localStorage.setItem("localLeaderboard", JSON.stringify(scores));
+    }
+  }
+
+  // Filter and sort scores for the current user
+  scores = scores
+    .filter(s => username === "Not signed in" || s.username === username)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+  // Basic stats
+  const numQuizzes = scores.length;
+  const highestScore = scores.length ? Math.max(...scores.map(s => s.score)) : 0;
+  const averageScore = scores.length ? (scores.reduce((sum, s) => sum + s.score, 0) / scores.length).toFixed(2) : 0;
+  const lastPlayed = scores.length ? new Date(scores[0].timestamp).toLocaleString() : "N/A";
+
+  // Favorite subject
+  const subjectCounts = {};
+  scores.forEach(s => {
+    if (s.subject) {
+      subjectCounts[s.subject] = (subjectCounts[s.subject] || 0) + 1;
+    }
+  });
+  const favoriteSubject = Object.keys(subjectCounts).length
+    ? Object.keys(subjectCounts).reduce((a, b) => subjectCounts[a] > subjectCounts[b] ? a : b)
+    : "N/A";
+
+  const historyList = scores.length > 0
+    ? `<ol style="padding-left:20px;">${scores.map(s => `
+        <li style="margin-bottom:5px;">
+          <strong>${s.subject || "General"}:</strong> ${s.score}/${s.total} -
+          <em>${new Date(s.timestamp).toLocaleString()}</em>
+        </li>`).join("")}</ol>`
+    : "<p>No play history yet.</p>";
+
+  const avatarOptions = Array.from({ length: 40 }, (_, i) => `
+    <img src="avatars/avatar${i + 1}.png"
+         onclick="selectProfileImage('avatars/avatar${i + 1}.png')"
+         style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid #ccc;transition:0.3s;">
+  `).join("");
+
+  card.innerHTML = `
+    <button class="back-arrow" onclick="showWelcome()"
+      style="background:none;border:none;cursor:pointer;position:absolute;top:20px;left:20px;">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" fill="none"/>
+      </svg>
+    </button>
+    <h1 class="title">Profile</h1>
+
+    <div class="tabs" style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+      <button onclick="showTab('profile-info')" class="tab-btn start active">Profile Info</button>
+      <button onclick="showTab('play-history')" class="tab-btn start">Play History</button>
+      <button onclick="showTab('avatar-change')" class="tab-btn start">Change Avatar</button>
+    </div>
+
+    <div id="profile-info" class="tab-content" style="display:block; text-align:center;">
+      <img src="${avatar}" alt="Profile Picture" style="width:120px;height:120px;border-radius:50%;border:3px solid #f8be2e;object-fit:cover;">
+      <h2 style="margin:12px 0;">${username}</h2>
+      <button class="btn-home" onclick="logOut()" style="margin-top:20px;">Log Out</button>
+    </div>
+
+    <div id="play-history" class="tab-content" style="display:none;">
+      <h3>Play History Stats</h3>
+      <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:10px;margin-bottom:20px;">
+        <p><strong>Number of Quizzes Played:</strong> ${numQuizzes}</p>
+        <p><strong>Highest Score:</strong> ${highestScore}</p>
+        <p><strong>Average Score:</strong> ${averageScore}</p>
+        <p><strong>Favorite Subject:</strong> ${favoriteSubject}</p>
+        <p><strong>Time Last Quiz Played:</strong> ${lastPlayed}</p>
+      </div>
+      <h3>Past Attempts</h3>
+      ${historyList}
+    </div>
+
+    <div id="avatar-change" class="tab-content" style="display:none; text-align:center;">
+      <h3>Select an Avatar</h3>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;max-height:300px;overflow-y:auto;">
+        ${avatarOptions}
+      </div>
+      <label class="upload-btn"
+  style="display:inline-block;margin-top:20px;padding:12px 24px;font-weight:600;
+         background:linear-gradient(135deg,#42a5f5,#1e88e5);
+         color:#fff;border:none;border-radius:10px;cursor:pointer;
+         box-shadow:0 4px 8px rgba(66,165,245,.45);
+         transition:transform .25s, box-shadow .25s, background .25s;">
+  📁 Upload Image
+  <input type="file" accept="image/*" onchange="updateProfileImage(event)" style="display:none;">
+</label>
+    </div>
+  `;
+}
+    
+function selectProfileImage(src) {
+  const profileImg = document.getElementById("profile-img");
+  profileImg.src = src;
+  showProfilePage();
+}
+
+function showTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById(tabId).style.display = "block";
+  const index = ["profile-info", "play-history", "avatar-change"].indexOf(tabId);
+  document.querySelectorAll(".tab-btn")[index].classList.add("active");
+}
+
+/* ---------- HOOK PROFILE PICTURE CLICK ---------- */
+document.getElementById("profile-img").onclick = showProfilePage;
+
+/* ---------- EXPORT TO GLOBAL ---------- */
+window.handleSignUp = handleSignUp;
+window.handleLogIn = handleLogIn;
+window.logOut = logOut;
+
+/* ---------- INITIAL WELCOME + AVATAR ON LOAD ---------- */
+document.addEventListener("DOMContentLoaded", () => {
+  showWelcome();
+  const profileImg = document.getElementById("profile-img");
+  if (profileImg) {
+    if (document.body.classList.contains("light")) {
+      profileImg.src = "default-avatar.png";
+    } else if (document.body.classList.contains("dark")) {
+      profileImg.src = "default-avatar-white.png";
+    }
+  }
+});
+</script>
+
+</body>
+</html>
