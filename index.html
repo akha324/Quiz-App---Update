@@ -795,7 +795,7 @@ function showProfilePage() {
   const averageScore = scores.length ? (scores.reduce((sum, s) => sum + s.score, 0) / scores.length).toFixed(2) : 0;
   const lastPlayed = scores.length ? new Date(scores[0].timestamp).toLocaleString() : "N/A";
 
-  // Favorite subject (assuming each entry has s.subject)
+  // Favorite subject
   const subjectCounts = {};
   scores.forEach(s => {
     if (s.subject) {
@@ -806,6 +806,7 @@ function showProfilePage() {
     ? Object.keys(subjectCounts).reduce((a, b) => subjectCounts[a] > subjectCounts[b] ? a : b)
     : "N/A";
 
+  // Use template literals for correct HTML
   const historyList = scores.length > 0
     ? `<ol style="padding-left:20px;">${scores.map(s => `
         <li style="margin-bottom:5px;">
