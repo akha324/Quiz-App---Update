@@ -2,16 +2,16 @@
   "name": "quiz-app-update",
   "version": "1.0.0",
   "description": "An interactive quiz application",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "node server.js",
     "test": "echo \"No test specified\" && exit 0"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/akha324/Quiz-App---Update.git"
   },
- "keywords": [
+  "keywords": [
     "quiz",
     "node",
     "express",
@@ -21,10 +21,5 @@
   "license": "CUNY Queens College",
   "dependencies": {
     "express": "^4.18.2"
-  },
-  "homepage": "https://github.com/kennethjiang/js-file-download",
-  "typings": "js-file-download.d.ts",
-  "devDependencies": {
-    "eslint": "^5.8.0"
   }
 }
