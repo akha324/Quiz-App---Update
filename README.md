@@ -1,6 +1,7 @@
 // CSCI 355 Project 3 by Ashiq Khan 🎯
+
 /* QuizApp is a fun and interactive browser game that tests your general knowledge. This software utilizes the client-server 
-architecture and is written in HTML, CSS, and JavaScript. In this version, the questions are retrieved from TriviaApp.
+architecture and is written in HTML, CSS, and JavaScript. In this version, the questions are retrieved from TriviaApp.   */
 
 🧠 Quiz Content & Categories
 The quiz covers a large variety of topics including math, science, history, pop culture, and gaming. The questions 
