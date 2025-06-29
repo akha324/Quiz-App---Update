@@ -633,3 +633,13 @@ body:not(.dark) #profile-container .status.online {
   }
 }
 
+.upload-btn:hover {
+  background: linear-gradient(135deg,#64b5f6,#2196f3);
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(66,165,245,.75);
+}
+
+.upload-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 3px 6px rgba(66,165,245,.4);
+}
