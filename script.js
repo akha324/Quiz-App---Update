@@ -209,3 +209,23 @@ async function saveScore(username, score) {
     console.warn("Could not save score to server:", err);
   }
 }
+
+// ✅ Fetch trivia questions from Open Trivia DB
+async function fetchTriviaQuestions(amount = 10, category = 'any') {
+  let url = `https://opentdb.com/api.php?amount=${amount}&type=multiple`;
+  if (category !== 'any') {
+    url += `&category=${category}`;
+  }
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to fetch trivia questions");
+    }
+    const data = await response.json();
+    return data.results; // Array of trivia questions
+  } catch (err) {
+    console.error("Error fetching trivia questions:", err);
+    return [];
+  }
+}
