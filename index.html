@@ -781,7 +781,6 @@ function logOut() {
   showWelcome();
 }
 
-/* ---------- PROFILE PAGE ---------- */
 function showProfilePage() {
   const username = document.getElementById("profile-username").textContent || "Not signed in";
   const avatar = document.getElementById("profile-img").src;
@@ -790,20 +789,43 @@ function showProfilePage() {
     .filter(s => username === "Not signed in" || s.username === username)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
+  // Basic stats
+  const numQuizzes = scores.length;
+  const highestScore = scores.length ? Math.max(...scores.map(s => s.score)) : 0;
+  const averageScore = scores.length ? (scores.reduce((sum, s) => sum + s.score, 0) / scores.length).toFixed(2) : 0;
+  const lastPlayed = scores.length ? new Date(scores[0].timestamp).toLocaleString() : "N/A";
+
+  // Favorite subject (assuming each entry has s.subject)
+  const subjectCounts = {};
+  scores.forEach(s => {
+    if (s.subject) {
+      subjectCounts[s.subject] = (subjectCounts[s.subject] || 0) + 1;
+    }
+  });
+  const favoriteSubject = Object.keys(subjectCounts).length
+    ? Object.keys(subjectCounts).reduce((a, b) => subjectCounts[a] > subjectCounts[b] ? a : b)
+    : "N/A";
+
   const historyList = scores.length > 0
-    ? `<ol>${scores.map(s => `<li>${s.score}/${s.total} - ${new Date(s.timestamp).toLocaleString()}</li>`).join("")}</ol>`
+    ? `<ol style="padding-left:20px;">${scores.map(s => `
+        <li style="margin-bottom:5px;">
+          <strong>${s.subject || "General"}:</strong> ${s.score}/${s.total} -
+          <em>${new Date(s.timestamp).toLocaleString()}</em>
+        </li>`).join("")}</ol>`
     : "<p>No play history yet.</p>";
 
   const avatarOptions = Array.from({ length: 40 }, (_, i) => `
-    <img src="avatars/avatar${i + 1}.png" 
-         onclick="selectProfileImage('avatars/avatar${i + 1}.png')" 
+    <img src="avatars/avatar${i + 1}.png"
+         onclick="selectProfileImage('avatars/avatar${i + 1}.png')"
          style="width:60px;height:60px;border-radius:50%;margin:5px;cursor:pointer;border:2px solid #ccc;transition:0.3s;">
   `).join("");
 
   card.innerHTML = `
     <button class="back-arrow" onclick="showWelcome()"
       style="background:none;border:none;cursor:pointer;position:absolute;top:20px;left:20px;">
-      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" fill="none"/></svg>
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2" fill="none"/>
+      </svg>
     </button>
     <h1 class="title">Profile</h1>
 
@@ -820,7 +842,15 @@ function showProfilePage() {
     </div>
 
     <div id="play-history" class="tab-content" style="display:none;">
-      <h3>Play History</h3>
+      <h3>Play History Stats</h3>
+      <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:10px;margin-bottom:20px;">
+        <p><strong>Number of Quizzes Played:</strong> ${numQuizzes}</p>
+        <p><strong>Highest Score:</strong> ${highestScore}</p>
+        <p><strong>Average Score:</strong> ${averageScore}</p>
+        <p><strong>Favorite Subject:</strong> ${favoriteSubject}</p>
+        <p><strong>Time Last Quiz Played:</strong> ${lastPlayed}</p>
+      </div>
+      <h3>Past Attempts</h3>
       ${historyList}
     </div>
 
@@ -829,61 +859,12 @@ function showProfilePage() {
       <div style="display:flex;flex-wrap:wrap;justify-content:center;max-height:300px;overflow-y:auto;">
         ${avatarOptions}
       </div>
-      <label class="upload-btn" 
+      <label class="upload-btn"
         style="display:inline-block;margin-top:20px;padding:10px 20px;background:#f8be2e;color:#000;border-radius:5px;cursor:pointer;">
         📁 Upload Image
         <input type="file" accept="image/*" onchange="updateProfileImage(event)" style="display:none;">
       </label>
     </div>
-
-    <style>
-    .tabs {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .tab-btn.start {
-      display: inline-block;
-      background: #f8be2e;
-      color: #000;
-      font-family: inherit;
-      font-weight: bold;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .tab-btn.start:hover {
-      background: #ffd54f;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    }
-    .tab-btn.start.active {
-      background: #ffc107 !important;
-    }
-    .btn-home {
-      background: #03a9f4;
-      color: #fff;
-      font-family: inherit;
-      font-weight: bold;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .btn-home:hover {
-      background: #0288d1 !important;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-    }
-    .tab-content img:hover {
-      border-color: #f8be2e !important;
-      transform: scale(1.05);
-    }
-    </style>
   `;
 }
 
