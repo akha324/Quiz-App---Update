@@ -65,6 +65,11 @@ implement a timer, and how long the timer will last. I made the select category 
 the leaderboard where the user can see their top 10 scores. The latter button redirects the user to a page where he or she can select the social media 
 platform to send their score to. They include “Facebook”, “SnapChat”, “Twitter”, and “Instagram”.
 
+🚀 How to Deploy the Server
+
+To deploy the server on GitHub, open the following link: https://akha324.github.io/Quiz-App---Update/
+To deploy the server on Heroku, open the follwing link: https://quizapp-update-813af058569c.herokuapp.com/
+
 📄 License
 
 The project is open-source, which means it’s free for anyone to use. However, it’s still a work in progress and feedback on this software is greatly appreciated.
