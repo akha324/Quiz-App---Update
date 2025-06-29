@@ -785,7 +785,28 @@ function showProfilePage() {
   const username = document.getElementById("profile-username").textContent || "Not signed in";
   const avatar = document.getElementById("profile-img").src;
 
-  const scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]")
+  let scores = JSON.parse(localStorage.getItem("localLeaderboard") || "[]");
+
+  // 👉 If the user is signed in, ensure their scores are tracked
+  if (username !== "Not signed in") {
+    // Check if the user already has an entry
+    const userHasScores = scores.some(s => s.username === username);
+    if (!userHasScores) {
+      // Add a default entry for this user if missing
+      scores.push({
+        username: username,
+        score: 0,
+        total: 0,
+        timestamp: new Date().toISOString(),
+        subject: "General"
+      });
+      // Save it back to localStorage
+      localStorage.setItem("localLeaderboard", JSON.stringify(scores));
+    }
+  }
+
+  // Filter and sort scores for the current user
+  scores = scores
     .filter(s => username === "Not signed in" || s.username === username)
     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
@@ -806,7 +827,6 @@ function showProfilePage() {
     ? Object.keys(subjectCounts).reduce((a, b) => subjectCounts[a] > subjectCounts[b] ? a : b)
     : "N/A";
 
-  // Use template literals for correct HTML
   const historyList = scores.length > 0
     ? `<ol style="padding-left:20px;">${scores.map(s => `
         <li style="margin-bottom:5px;">
@@ -872,7 +892,7 @@ function showProfilePage() {
     </div>
   `;
 }
-
+    
 function selectProfileImage(src) {
   const profileImg = document.getElementById("profile-img");
   profileImg.src = src;
