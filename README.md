@@ -68,6 +68,7 @@ platform to send their score to. They include “Facebook”, “SnapChat”, �
 🚀 How to Deploy the Server
 
 To deploy the server on GitHub, click on the following link: https://akha324.github.io/Quiz-App---Update/ 
+
 To deploy the server on Heroku, click on the follwing link: https://quizapp-update-813af058569c.herokuapp.com/
 
 📄 License
